@@ -8,16 +8,16 @@ describe('externalOrPublicFunctionContext', () => {
     name: 'testInternalFunction',
     visibility: FunctionVisibility.External,
     virtual: true,
-    vParameters: mockParameterList({vParameters: []}),
-    vReturnParameters: mockParameterList({vParameters: []}),
+    vParameters: mockParameterList({ vParameters: [] }),
+    vReturnParameters: mockParameterList({ vParameters: [] }),
     implemented: true,
-    functionStateMutability: FunctionStateMutability.NonPayable
+    functionStateMutability: FunctionStateMutability.NonPayable,
   };
 
   it('throws an error if the function is not public nor external', () => {
-    for(const visibility in FunctionVisibility) {
-      if([FunctionVisibility.External, FunctionVisibility.Public].includes(FunctionVisibility[visibility])) continue;
-      const node = mockFunctionDefinition({...defaultAttributes, visibility: FunctionVisibility[visibility] });
+    for (const visibility in FunctionVisibility) {
+      if ([FunctionVisibility.External, FunctionVisibility.Public].includes(FunctionVisibility[visibility])) continue;
+      const node = mockFunctionDefinition({ ...defaultAttributes, visibility: FunctionVisibility[visibility] });
       expect(() => externalOrPublicFunctionContext(node)).to.throw('The function is not external nor public');
     }
   });
@@ -36,7 +36,7 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: [],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
@@ -45,7 +45,7 @@ describe('externalOrPublicFunctionContext', () => {
       mockVariableDeclaration({ name: 'a', typeString: 'uint256' }),
       mockVariableDeclaration({ name: 'b', typeString: 'boolean' }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({ vParameters: parameters }) });
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
@@ -58,16 +58,13 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: [],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
   it('processes unnamed parameters', () => {
-    const parameters = [
-      mockVariableDeclaration({ typeString: 'uint256' }),
-      mockVariableDeclaration({ typeString: 'boolean' }),
-    ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({vParameters: parameters}) });
+    const parameters = [mockVariableDeclaration({ typeString: 'uint256' }), mockVariableDeclaration({ typeString: 'boolean' })];
+    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({ vParameters: parameters }) });
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
@@ -80,16 +77,13 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: [],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
   it('processes unnamed returned parameters', () => {
-    const parameters = [
-      mockVariableDeclaration({ typeString: 'uint256' }),
-      mockVariableDeclaration({ typeString: 'boolean' }),
-    ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({vParameters: parameters}) });
+    const parameters = [mockVariableDeclaration({ typeString: 'uint256' }), mockVariableDeclaration({ typeString: 'boolean' })];
+    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({ vParameters: parameters }) });
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
@@ -102,7 +96,7 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: ['_returnParam0', '_returnParam1'],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
@@ -111,7 +105,7 @@ describe('externalOrPublicFunctionContext', () => {
       mockVariableDeclaration({ name: 'a', typeString: 'uint256' }),
       mockVariableDeclaration({ name: 'b', typeString: 'boolean' }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({ vParameters: parameters }) });
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
@@ -124,7 +118,7 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: ['a', 'b'],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
@@ -135,7 +129,7 @@ describe('externalOrPublicFunctionContext', () => {
       mockVariableDeclaration({ name: 'c', typeString: 'bytes', storageLocation: DataLocation.CallData }),
       mockVariableDeclaration({ name: 'd', typeString: 'boolean', storageLocation: DataLocation.Default }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({ vParameters: parameters }) });
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
@@ -148,7 +142,7 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: [],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
@@ -159,7 +153,7 @@ describe('externalOrPublicFunctionContext', () => {
       mockVariableDeclaration({ name: 'c', typeString: 'bytes', storageLocation: DataLocation.CallData }),
       mockVariableDeclaration({ name: 'd', typeString: 'boolean', storageLocation: DataLocation.Default }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({ vParameters: parameters }) });
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
@@ -172,12 +166,12 @@ describe('externalOrPublicFunctionContext', () => {
       outputNames: ['a', 'b', 'c', 'd'],
       implemented: true,
       stateMutability: '',
-      visibility: 'external'
+      visibility: 'external',
     });
   });
 
   it('determines whether the function is implemented or not', () => {
-    for(const implemented of [true, false]) {
+    for (const implemented of [true, false]) {
       const node = mockFunctionDefinition({ ...defaultAttributes, implemented: implemented });
       const context = externalOrPublicFunctionContext(node);
       expect(context.implemented).to.be.equal(implemented);

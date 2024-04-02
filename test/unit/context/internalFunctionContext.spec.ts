@@ -8,15 +8,15 @@ describe('internalFunctionContext', () => {
     name: 'testInternalFunction',
     visibility: FunctionVisibility.Internal,
     virtual: true,
-    vParameters: mockParameterList({vParameters: []}),
-    vReturnParameters: mockParameterList({vParameters: []}),
-    implemented: true
+    vParameters: mockParameterList({ vParameters: [] }),
+    vReturnParameters: mockParameterList({ vParameters: [] }),
+    implemented: true,
   };
 
   it('throws an error if the function is not internal', () => {
-    for(const visibility in FunctionVisibility) {
-      if(FunctionVisibility[visibility] === FunctionVisibility.Internal) continue;
-      const node = mockFunctionDefinition({...defaultAttributes, visibility: FunctionVisibility[visibility] });
+    for (const visibility in FunctionVisibility) {
+      if (FunctionVisibility[visibility] === FunctionVisibility.Internal) continue;
+      const node = mockFunctionDefinition({ ...defaultAttributes, visibility: FunctionVisibility[visibility] });
       expect(() => internalFunctionContext(node)).to.throw('The function is not internal');
     }
   });
@@ -50,7 +50,7 @@ describe('internalFunctionContext', () => {
       mockVariableDeclaration({ name: 'a', typeString: 'uint256' }),
       mockVariableDeclaration({ name: 'b', typeString: 'boolean' }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({ vParameters: parameters }) });
     const context = internalFunctionContext(node);
 
     expect(context).to.eql({
@@ -69,11 +69,8 @@ describe('internalFunctionContext', () => {
   });
 
   it('processes unnamed parameters', () => {
-    const parameters = [
-      mockVariableDeclaration({ typeString: 'uint256' }),
-      mockVariableDeclaration({ typeString: 'boolean' }),
-    ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({vParameters: parameters}) });
+    const parameters = [mockVariableDeclaration({ typeString: 'uint256' }), mockVariableDeclaration({ typeString: 'boolean' })];
+    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({ vParameters: parameters }) });
     const context = internalFunctionContext(node);
 
     expect(context).to.eql({
@@ -92,11 +89,8 @@ describe('internalFunctionContext', () => {
   });
 
   it('processes unnamed returned parameters', () => {
-    const parameters = [
-      mockVariableDeclaration({ typeString: 'uint256' }),
-      mockVariableDeclaration({ typeString: 'boolean' }),
-    ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({vParameters: parameters}) });
+    const parameters = [mockVariableDeclaration({ typeString: 'uint256' }), mockVariableDeclaration({ typeString: 'boolean' })];
+    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({ vParameters: parameters }) });
     const context = internalFunctionContext(node);
 
     expect(context).to.eql({
@@ -119,7 +113,7 @@ describe('internalFunctionContext', () => {
       mockVariableDeclaration({ name: 'a', typeString: 'uint256' }),
       mockVariableDeclaration({ name: 'b', typeString: 'boolean' }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({ vParameters: parameters }) });
     const context = internalFunctionContext(node);
 
     expect(context).to.eql({
@@ -144,7 +138,7 @@ describe('internalFunctionContext', () => {
       mockVariableDeclaration({ name: 'c', typeString: 'bytes', storageLocation: DataLocation.CallData }),
       mockVariableDeclaration({ name: 'd', typeString: 'boolean', storageLocation: DataLocation.Default }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vParameters: mockParameterList({ vParameters: parameters }) });
     const context = internalFunctionContext(node);
 
     expect(context).to.eql({
@@ -169,7 +163,7 @@ describe('internalFunctionContext', () => {
       mockVariableDeclaration({ name: 'c', typeString: 'bytes', storageLocation: DataLocation.CallData }),
       mockVariableDeclaration({ name: 'd', typeString: 'boolean', storageLocation: DataLocation.Default }),
     ];
-    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({vParameters: parameters}) });
+    const node = mockFunctionDefinition({ ...defaultAttributes, vReturnParameters: mockParameterList({ vParameters: parameters }) });
     const context = internalFunctionContext(node);
 
     expect(context).to.eql({
@@ -188,7 +182,7 @@ describe('internalFunctionContext', () => {
   });
 
   it('determines whether the function is view or not', () => {
-    for(const stateMutability in FunctionStateMutability) {
+    for (const stateMutability in FunctionStateMutability) {
       const isView = FunctionStateMutability[stateMutability] === FunctionStateMutability.View;
       const node = mockFunctionDefinition({ ...defaultAttributes, stateMutability: FunctionStateMutability[stateMutability] });
       const context = internalFunctionContext(node);
@@ -197,7 +191,7 @@ describe('internalFunctionContext', () => {
   });
 
   it('determines whether the function is implemented or not', () => {
-    for(const implemented of [true, false]) {
+    for (const implemented of [true, false]) {
       const node = mockFunctionDefinition({ ...defaultAttributes, implemented: implemented });
       const context = internalFunctionContext(node);
       expect(context.implemented).to.be.equal(implemented);

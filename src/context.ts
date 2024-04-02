@@ -1,17 +1,20 @@
-import { ExternalFunctionContext, ConstructorContext, InternalFunctionContext, ImportContext, MappingVariableContext, ArrayVariableContext, StateVariableContext } from './types';
 import {
-  sanitizeParameterType,
-  explicitTypeStorageLocation,
-  extractParameters,
-  extractReturnParameters
-} from './utils';
+  ExternalFunctionContext,
+  ConstructorContext,
+  InternalFunctionContext,
+  ImportContext,
+  MappingVariableContext,
+  ArrayVariableContext,
+  StateVariableContext,
+} from './types';
+import { sanitizeParameterType, explicitTypeStorageLocation, extractParameters, extractReturnParameters } from './utils';
 import { ContractDefinition, FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
 
 export function internalFunctionContext(node: FunctionDefinition): InternalFunctionContext {
   // Check if the function is internal
   if (node.visibility !== 'internal') throw new Error('The function is not internal');
   // Check if the function is internal
-  if(!node.virtual) throw new Error('The function is not virtual');
+  if (!node.virtual) throw new Error('The function is not virtual');
 
   const { functionParameters, parameterTypes, parameterNames } = extractParameters(node.vParameters.vParameters);
   const { functionReturnParameters, returnParameterTypes, returnParameterNames } = extractReturnParameters(node.vReturnParameters.vParameters);
@@ -89,7 +92,7 @@ export function externalOrPublicFunctionContext(node: FunctionDefinition): Exter
 }
 
 export function constructorContext(node: FunctionDefinition): ConstructorContext {
-  if(!node.isConstructor) throw new Error('The node is not a constructor');
+  if (!node.isConstructor) throw new Error('The node is not a constructor');
 
   // Get the parameters of the constructor, if there are no parameters then we use an empty array
   const { functionParameters: parameters, parameterNames } = extractParameters(node.vParameters.vParameters);
@@ -97,8 +100,8 @@ export function constructorContext(node: FunctionDefinition): ConstructorContext
   return {
     parameters: parameters.join(', '),
     parameterNames: parameterNames.join(', '),
-    contractName: (node.vScope as ContractDefinition).name
-  }
+    contractName: (node.vScope as ContractDefinition).name,
+  };
 }
 
 export function importContext(node: ImportDirective): ImportContext {
@@ -106,15 +109,17 @@ export function importContext(node: ImportDirective): ImportContext {
   const { symbolAliases, absolutePath } = node;
 
   // If there are no named imports then we import the whole file
-  if (!symbolAliases.length) return { absolutePath}
+  if (!symbolAliases.length) return { absolutePath };
 
   // Get the names of the named imports
-  const namedImports = symbolAliases.map((symbolAlias) => symbolAlias.foreign instanceof Identifier ? symbolAlias.foreign.name : symbolAlias.foreign);
+  const namedImports = symbolAliases.map((symbolAlias) =>
+    symbolAlias.foreign instanceof Identifier ? symbolAlias.foreign.name : symbolAlias.foreign,
+  );
 
   return {
     namedImports,
-    absolutePath
-  }
+    absolutePath,
+  };
 }
 
 export function mappingVariableContext(node: VariableDeclaration): MappingVariableContext {

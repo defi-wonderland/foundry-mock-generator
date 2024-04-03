@@ -38,5 +38,8 @@ jobs:
           echo GOERLI_RPC="${{ secrets.GOERLI_RPC }}" >> .env
           cat .env
 
+      - name: "Run smock for test contracts"
+        run: yarn smock-test
+
       - name: Run tests
         run: yarn test

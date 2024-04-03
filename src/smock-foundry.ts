@@ -6,7 +6,7 @@ import {
   emptySmockDirectory,
   getSourceUnits,
   smockableNode,
-  compileSolidityFilesFoundry
+  compileSolidityFilesFoundry,
 } from './utils';
 import path from 'path';
 import { ensureDir } from 'fs-extra';
@@ -15,7 +15,12 @@ import { ensureDir } from 'fs-extra';
  * Generates the mock contracts
  * @param mocksDirectory The directory where the mock contracts will be generated
  */
-export async function generateMockContracts(rootPath: string, contractsDirectories: string[],  mocksDirectory: string, ignoreDirectories: string[]) {
+export async function generateMockContracts(
+  rootPath: string,
+  contractsDirectories: string[],
+  mocksDirectory: string,
+  ignoreDirectories: string[],
+) {
   await emptySmockDirectory(mocksDirectory);
   const contractTemplate = getContractTemplate();
 
@@ -27,20 +32,20 @@ export async function generateMockContracts(rootPath: string, contractsDirectori
 
       if (!sourceUnits.length) return console.error('No solidity files found in the specified directory');
 
-      for(const sourceUnit of sourceUnits) {
+      for (const sourceUnit of sourceUnits) {
         let importsContent = '';
         // First process the imports, they will be on top of each mock contract
-        for(const importDirective of sourceUnit.vImportDirectives) {
+        for (const importDirective of sourceUnit.vImportDirectives) {
           importsContent += await renderNodeMock(importDirective);
         }
 
-        for(const contract of sourceUnit.vContracts) {
+        for (const contract of sourceUnit.vContracts) {
           let mockContent = '';
           // Libraries are not mocked
-          if(contract.kind === 'library') continue;
+          if (contract.kind === 'library') continue;
 
-          for(const node of contract.children) {
-            if(!smockableNode(node)) continue;
+          for (const node of contract.children) {
+            if (!smockableNode(node)) continue;
             mockContent += await renderNodeMock(node);
           }
 
@@ -51,9 +56,11 @@ export async function generateMockContracts(rootPath: string, contractsDirectori
 
           // The mock contract is written to the mocks directory, taking into account the source contract's place in the directory structure
           // So if the source is in a subdirectory of the contracts directory, the mock will be in the same subdirectory of the mocks directory
-          const escapedSubstrings = contractsDirectories.map(directory => directory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          const escapedSubstrings = contractsDirectories.map((directory) => directory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
           const regexPattern = new RegExp(escapedSubstrings.join('|'), 'g');
-          const mockContractPath = scope.absolutePath.replace(regexPattern, mocksDirectory).replace(path.basename(sourceUnit.absolutePath), `Mock${contract.name}.sol`);
+          const mockContractPath = scope.absolutePath
+            .replace(regexPattern, mocksDirectory)
+            .replace(path.basename(sourceUnit.absolutePath), `Mock${contract.name}.sol`);
           const mockContractAbsolutePath = path.resolve(rootPath, mockContractPath);
 
           // Relative path to the source is used in mock's imports
@@ -65,16 +72,16 @@ export async function generateMockContracts(rootPath: string, contractsDirectori
             contractName: contract.name,
             sourceContractRelativePath: sourceContractRelativePath,
             exportedSymbols: Array.from(scope.exportedSymbols.keys()),
-            license: sourceUnit.license
+            license: sourceUnit.license,
           })
-          // TODO: Check if there are other symbols we should account for
-          // TODO: Check if there is a better way to handle the HTML encoded characters, for instance with `compile` options
-          .replace(/&#x27;/g, "'")
-          .replace(/&#x3D;/g, '=')
-          .replace(/&gt;/g, '>')
-          .replace(/&lt;/g, '<')
-          .replace(/&lt;/g, '<')
-          .replace(/;;/g, ';');
+            // TODO: Check if there are other symbols we should account for
+            // TODO: Check if there is a better way to handle the HTML encoded characters, for instance with `compile` options
+            .replace(/&#x27;/g, "'")
+            .replace(/&#x3D;/g, '=')
+            .replace(/&gt;/g, '>')
+            .replace(/&lt;/g, '<')
+            .replace(/&lt;/g, '<')
+            .replace(/;;/g, ';');
 
           await ensureDir(path.dirname(mockContractAbsolutePath));
           writeFileSync(mockContractAbsolutePath, contractCode);
@@ -88,8 +95,8 @@ export async function generateMockContracts(rootPath: string, contractsDirectori
 
       console.log('Mock contracts generated successfully');
 
-      await compileSolidityFilesFoundry(mocksDirectory);
-    } catch(error) {
+      await compileSolidityFilesFoundry(rootPath, mocksDirectory);
+    } catch (error) {
       console.error(error);
     }
   } catch (error) {

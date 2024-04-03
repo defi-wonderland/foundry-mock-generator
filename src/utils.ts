@@ -1,13 +1,11 @@
 import Handlebars from 'handlebars';
 import path from 'path';
 import { glob } from 'fast-glob';
-import { exec } from 'child_process';
 import { VariableDeclaration, FunctionDefinition, ImportDirective, ASTNode, ASTKind, ASTReader, SourceUnit, compileSol } from 'solc-typed-ast';
 import { userDefinedTypes, explicitTypes } from './types';
 import { readFileSync } from 'fs'; // TODO: Replace with fs/promises
 import { ensureDir, emptyDir } from 'fs-extra';
 import fs from 'fs/promises';
-import { promisify } from 'util';
 import {
   importContext,
   mappingVariableContext,
@@ -15,18 +13,8 @@ import {
   stateVariableContext,
   constructorContext,
   externalOrPublicFunctionContext,
-  internalFunctionContext
+  internalFunctionContext,
 } from './context';
-
-export const CONTEXT_RETRIEVERS = {
-  'mapping-state-variable': mappingVariableContext,
-  'array-state-variable': arrayVariableContext,
-  'state-variable': stateVariableContext,
-  'constructor': constructorContext,
-  'external-or-public-function': externalOrPublicFunctionContext,
-  'internal-function': internalFunctionContext,
-  'import': importContext
-}
 
 /**
  * Fixes user-defined types
@@ -72,12 +60,18 @@ export function getSmockHelperTemplate(): HandlebarsTemplateDelegate<any> {
  * Compiles the solidity files in the given directory calling forge build command
  * @param mockContractsDir The directory of the generated contracts
  */
-export async function compileSolidityFilesFoundry(mockContractsDir: string) {
+export async function compileSolidityFilesFoundry(rootPath: string, mockContractsDir: string) {
   console.log('Compiling contracts...');
   try {
-    const { stdout, stderr } = await promisify(exec)(`forge build -C ${mockContractsDir}`);
-    if (stderr) throw new Error(stderr);
-    if (stdout) console.log(stdout);
+    const solidityFiles: string[] = await getSolidityFilesAbsolutePaths(rootPath, [mockContractsDir]);
+
+    const remappings: string[] = await getRemappings(rootPath);
+
+    await compileSol(solidityFiles, 'auto', {
+      basePath: rootPath,
+      remapping: remappings,
+      includePath: [rootPath],
+    });
   } catch (e) {
     throw new Error(`Error while compiling contracts: ${e}`);
   }
@@ -85,7 +79,7 @@ export async function compileSolidityFilesFoundry(mockContractsDir: string) {
 
 export async function getSolidityFilesAbsolutePaths(cwd: string, directories: string[]): Promise<string[]> {
   // Map each directory to a glob promise, searching for .sol files
-  const promises = directories.map(directory => glob(`${directory}/**/*.sol`, { cwd, ignore: [] }));
+  const promises = directories.map((directory) => glob(`${directory}/**/*.sol`, { cwd, ignore: [] }));
   const filesArrays = await Promise.all(promises);
   const files = filesArrays.flat();
 
@@ -98,7 +92,11 @@ export async function readPartial(partialName: string): Promise<string> {
   return partialContent;
 }
 
-export function extractParameters(parameters: VariableDeclaration[]): { functionParameters: string[], parameterTypes: string[], parameterNames: string[] } {
+export function extractParameters(parameters: VariableDeclaration[]): {
+  functionParameters: string[];
+  parameterTypes: string[];
+  parameterNames: string[];
+} {
   const functionParameters = parameters.map((parameter, index) => {
     const typeName: string = sanitizeParameterType(parameter.typeString);
     const paramName: string = parameter.name || `_param${index}`;
@@ -106,17 +104,21 @@ export function extractParameters(parameters: VariableDeclaration[]): { function
     return `${typeName} ${storageLocation}${paramName}`;
   });
 
-  const parameterTypes = parameters.map(parameter => sanitizeParameterType(parameter.typeString));
+  const parameterTypes = parameters.map((parameter) => sanitizeParameterType(parameter.typeString));
   const parameterNames = parameters.map((parameter, index) => parameter.name || `_param${index}`);
 
   return {
     functionParameters,
     parameterTypes,
-    parameterNames
-  }
+    parameterNames,
+  };
 }
 
-export function extractReturnParameters(returnParameters: VariableDeclaration[]): { functionReturnParameters: string[], returnParameterTypes: string[], returnParameterNames: string[] } {
+export function extractReturnParameters(returnParameters: VariableDeclaration[]): {
+  functionReturnParameters: string[];
+  returnParameterTypes: string[];
+  returnParameterNames: string[];
+} {
   const functionReturnParameters = returnParameters.map((parameter: VariableDeclaration, index: number) => {
     const typeName: string = sanitizeParameterType(parameter.typeString);
     const paramName: string = parameter.name || `_returnParam${index}`;
@@ -124,19 +126,30 @@ export function extractReturnParameters(returnParameters: VariableDeclaration[])
     return `${typeName} ${storageLocation}${paramName}`;
   });
 
-  const returnParameterTypes = returnParameters.map(parameter => sanitizeParameterType(parameter.typeString));
+  const returnParameterTypes = returnParameters.map((parameter) => sanitizeParameterType(parameter.typeString));
   const returnParameterNames = returnParameters.map((parameter, index) => parameter.name || `_returnParam${index}`);
 
   return {
     functionReturnParameters,
     returnParameterTypes,
-    returnParameterNames
-  }
+    returnParameterNames,
+  };
 }
 
 export async function renderNodeMock(node: ASTNode): Promise<string> {
   const partial = partialName(node);
   if (partial === undefined) return '';
+
+  const CONTEXT_RETRIEVERS = {
+    'mapping-state-variable': mappingVariableContext,
+    'array-state-variable': arrayVariableContext,
+    'state-variable': stateVariableContext,
+    constructor: constructorContext,
+    'external-or-public-function': externalOrPublicFunctionContext,
+    'internal-function': internalFunctionContext,
+    import: importContext,
+  };
+
   const context = CONTEXT_RETRIEVERS[partial](node);
   // TODO: Handle a possible invalid partial name
   const partialContent = await readPartial(partial);
@@ -221,23 +234,25 @@ export function sanitizeRemapping(line: string): string {
 }
 
 export async function emptySmockDirectory(mocksDirectory: string) {
-    // Create the directory if it doesn't exist
-    try {
-      await ensureDir(mocksDirectory);
-    } catch (error) {
-      console.error('Error while creating the mock directory: ', error);
-    }
-  
-    // Empty the directory, if it exists
-    try {
-      await emptyDir(mocksDirectory);
-    } catch (error) {
-      console.error('Error while trying to empty the mock directory: ', error);
-    }
+  // Create the directory if it doesn't exist
+  try {
+    await ensureDir(mocksDirectory);
+  } catch (error) {
+    console.error('Error while creating the mock directory: ', error);
+  }
+
+  // Empty the directory, if it exists
+  try {
+    await emptyDir(mocksDirectory);
+  } catch (error) {
+    console.error('Error while trying to empty the mock directory: ', error);
+  }
 }
 
 export async function getSourceUnits(rootPath: string, contractsDirectories: string[], ignoreDirectories: string[]): Promise<SourceUnit[]> {
-  const solidityFiles: string[] = await getSolidityFilesAbsolutePaths(rootPath, contractsDirectories);
+  const files: string[] = await getSolidityFilesAbsolutePaths(rootPath, contractsDirectories);
+  const solidityFiles = files.filter((file) => !ignoreDirectories.some((directory) => file.includes(directory)));
+
   const remappings: string[] = await getRemappings(rootPath);
 
   const compiledFiles = await compileSol(solidityFiles, 'auto', {
@@ -246,10 +261,7 @@ export async function getSourceUnits(rootPath: string, contractsDirectories: str
     includePath: [rootPath],
   });
 
-  const sourceUnits = new ASTReader()
-    .read(compiledFiles.data, ASTKind.Any, compiledFiles.files)
-    // Remove Solidity files from the ignored directories
-    .filter(sourceUnit => !ignoreDirectories.some(directory => sourceUnit.absolutePath.includes(directory)));
+  const sourceUnits = new ASTReader().read(compiledFiles.data, ASTKind.Any, compiledFiles.files);
 
   return sourceUnits;
 }
@@ -260,7 +272,7 @@ export function smockableNode(node: ASTNode): boolean {
     if (node.constant || node.mutability === 'immutable') return false;
     // If the state variable is private we don't mock it
     if (node.visibility === 'private') return false;
-  } else if(!(node instanceof FunctionDefinition)) {
+  } else if (!(node instanceof FunctionDefinition)) {
     // Only process variables and functions
     return false;
   }

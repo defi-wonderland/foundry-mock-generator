@@ -29,7 +29,7 @@ function getProcessArguments() {
         type: 'string',
       },
       ignore: {
-        describe: 'Ignore folders',
+        describe: 'Ignore directories',
         default: [],
         type: 'array',
         string: true,

@@ -91,7 +91,8 @@ export async function generateMockContracts(
       // Generate SmockHelper contract
       const smockHelperTemplate = await getSmockHelperTemplate();
       const smockHelperCode: string = smockHelperTemplate({});
-      writeFileSync(`${mocksDirectory}/SmockHelper.sol`, smockHelperCode);
+      const helperPath = path.resolve(rootPath, mocksDirectory);
+      writeFileSync(`${helperPath}/SmockHelper.sol`, smockHelperCode);
 
       console.log('Mock contracts generated successfully');
 

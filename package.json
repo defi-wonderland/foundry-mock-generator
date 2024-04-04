@@ -21,7 +21,7 @@
     "lint:fix": "sort-package-json && forge fmt && yarn lint:ts-logic --fix",
     "lint:ts-logic": "eslint ./src/**/*.ts",
     "smock-test": "node dist/run.js --contracts solidity --mocks solidity/test/smock --ignore solidity/test",
-    "test": "forge build --skip test && cross-env mocha 'test/**/*.spec.ts' && forge test",
+    "test": "forge build --skip test && cross-env mocha 'test/**/*.spec.ts' && yarn smock-test && forge test",
     "test:mocha": "cross-env mocha 'test/**/*.spec.ts'"
   },
   "lint-staged": {

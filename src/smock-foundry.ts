@@ -59,7 +59,7 @@ export async function generateMockContracts(
           const escapedSubstrings = contractsDirectories.map((directory) => directory.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
           const regexPattern = new RegExp(escapedSubstrings.join('|'), 'g');
           const mockContractPath = scope.absolutePath
-            .replace(regexPattern, mocksDirectory)
+            .replace(regexPattern, path.join(mocksDirectory, path.sep))
             .replace(path.basename(sourceUnit.absolutePath), `Mock${contract.name}.sol`);
           const mockContractAbsolutePath = path.resolve(rootPath, mockContractPath);
 

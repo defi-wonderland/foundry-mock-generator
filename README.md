@@ -26,7 +26,7 @@ yarn add @defi-wonderland/smock-foundry --save-dev
 To generate the mock contracts all you have to do is run:
 
 ```bash
-yarn smock-foundry --contracts path/to/contracts
+yarn smock-foundry --contracts solidity/contracts
 ```
 
 The `smock-foundry` command accepts the following options:
@@ -34,8 +34,8 @@ The `smock-foundry` command accepts the following options:
 Option      | Default                           | Notes
 ------------|-----------------------------------|-------
 `contracts` | —                                 | The path to the solidity contracts to mock
-`out`       | `./out`                           | The path that has the compiled artifacts
-`mocks `    | `./solidity/test/smock`           | The path to the generated mock contracts
+`root`      | `.`                               | The path to the root of the project
+`mocks `    | `./test/smock`                    | The path to the generated mock contracts
 `ignore`    | []                                | A list of directories to ignore, e.g. `--ignore libraries`
 
 Be sure to `gitignore` the generated smock directory.
@@ -58,7 +58,7 @@ contract Greeter {
 }
 ```
 
-After running the generator, you will have a mock contract located at `${genDir}/contracts/MockGreeter.sol`:
+After running the generator, you will have a mock contract located at `${mocks}/contracts/MockGreeter.sol`:
 
 ```solidity
 contract MockGreeter is Greeter {

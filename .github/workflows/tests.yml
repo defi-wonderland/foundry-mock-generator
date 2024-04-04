@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [18.x]
 
     steps:
       - name: Check out github repository
@@ -37,6 +37,9 @@ jobs:
           echo MAINNET_RPC="${{ secrets.MAINNET_RPC }}" >> .env
           echo GOERLI_RPC="${{ secrets.GOERLI_RPC }}" >> .env
           cat .env
+
+      - name: Build smock
+        run: yarn build
 
       - name: Run tests
         run: yarn test

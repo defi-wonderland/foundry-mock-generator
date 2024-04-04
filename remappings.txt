@@ -1,5 +1,6 @@
 isolmate/=lib/isolmate/src
 forge-std/=lib/forge-std/src
+ds-test/=lib/ds-test/src
 
 contracts/=solidity/contracts
 interfaces/=solidity/interfaces

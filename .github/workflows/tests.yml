@@ -41,8 +41,5 @@ jobs:
       - name: Build smock
         run: yarn build
 
-      - name: Run smock for test contracts
-        run: yarn smock-test
-
       - name: Run tests
         run: yarn test

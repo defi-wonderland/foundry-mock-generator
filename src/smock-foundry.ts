@@ -33,11 +33,6 @@ export async function generateMockContracts(
       if (!sourceUnits.length) return console.error('No solidity files found in the specified directory');
 
       for (const sourceUnit of sourceUnits) {
-        // Skip source units that are not in the contracts directories
-        if(
-          !contractsDirectories.some((directory) => sourceUnit.absolutePath.includes(directory))
-        ) continue;
-
         let importsContent = '';
         // First process the imports, they will be on top of each mock contract
         for (const importDirective of sourceUnit.vImportDirectives) {

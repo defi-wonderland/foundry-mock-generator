@@ -261,7 +261,9 @@ export async function getSourceUnits(rootPath: string, contractsDirectories: str
     includePath: [rootPath],
   });
 
-  const sourceUnits = new ASTReader().read(compiledFiles.data, ASTKind.Any, compiledFiles.files);
+  const sourceUnits = new ASTReader().read(compiledFiles.data, ASTKind.Any, compiledFiles.files)
+    // Skip source units that are not in the contracts directories
+    .filter((sourceUnit) => contractsDirectories.some((directory) => sourceUnit.absolutePath.includes(directory)));
 
   return sourceUnits;
 }

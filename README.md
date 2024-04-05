@@ -1,7 +1,8 @@
 [![Version](https://img.shields.io/npm/v/@defi-wonderland/smock-foundry?label=Version)](https://www.npmjs.com/package/@defi-wonderland/smock-foundry)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/defi-wonderland/prophet-sdk/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/defi-wonderland/smock-foundry/blob/dev/LICENSE)
 
 # Smock Foundry
+
 A plugin for [foundry](https://github.com/foundry-rs/foundry) that automatically generates Solidity mocks for every contract in your project.
 
 ## Features
@@ -31,12 +32,12 @@ yarn smock-foundry --contracts solidity/contracts
 
 The `smock-foundry` command accepts the following options:
 
-Option      | Default                           | Notes
-------------|-----------------------------------|-------
-`contracts` | —                                 | The path to the solidity contracts to mock
-`root`      | `.`                               | The path to the root of the project
-`mocks `    | `./test/smock`                    | The path to the generated mock contracts
-`ignore`    | []                                | A list of directories to ignore, e.g. `--ignore libraries`
+| Option      | Default        | Notes                                                      |
+| ----------- | -------------- | ---------------------------------------------------------- |
+| `contracts` | —              | The path to the solidity contracts to mock                 |
+| `root`      | `.`            | The path to the root of the project                        |
+| `mocks `    | `./test/smock` | The path to the generated mock contracts                   |
+| `ignore`    | []             | A list of directories to ignore, e.g. `--ignore libraries` |
 
 Be sure to `gitignore` the generated smock directory.
 

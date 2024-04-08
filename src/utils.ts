@@ -304,9 +304,9 @@ export async function renderAbstractUnimplementedFunctions(contract: ContractDef
   if (contract.vLinearizedBaseContracts.length > 1) {
     const functions = contract.vFunctions;
 
-    // Skip the first contract, which is the current contract
-    for (let i = 1; i < contract.vLinearizedBaseContracts.length; i++) {
-      const base = contract.vLinearizedBaseContracts[i];
+    for (const base of contract.vLinearizedBaseContracts) {
+      // Skip the first contract, which is the current contract
+      if (base.id === contract.id) continue;
 
       for (const baseFunction of base.vFunctions) {
         // If the function is not implemented in the current contract, render it

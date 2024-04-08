@@ -301,32 +301,26 @@ export function smockableNode(node: ASTNode): boolean {
 export async function renderAbstractUnimplementedFunctions(contract: ContractDefinition): Promise<string> {
   let content = '';
 
-  if (contract.vLinearizedBaseContracts.length > 1) {
-    const variablesSelectors = contract.vStateVariables.map((variable) => variable.raw?.functionSelector);
-    const functionsSelectors = contract.vFunctions.map((func) => func.raw?.functionSelector);
-    const newFunctions = [];
+  const existingSelectors = [...contract.vStateVariables, ...contract.vFunctions].map((node) => node.raw?.functionSelector);
+  const functions = [];
 
-    for (const base of contract.vLinearizedBaseContracts) {
-      // Skip the first contract, which is the current contract
-      if (base.id === contract.id) continue;
+  for (const base of contract.vLinearizedBaseContracts) {
+    // Skip the first contract, which is the current contract
+    if (base.id === contract.id) continue;
 
-      for (const baseFunction of base.vFunctions) {
-        // Skip the functions that are already implemented in the current contract as variables
-        if (variablesSelectors.includes(baseFunction.raw?.functionSelector)) continue;
+    for (const baseFunction of base.vFunctions) {
+      // Skip the functions that are already implemented in the current contract
+      if (existingSelectors.includes(baseFunction.raw?.functionSelector)) continue;
 
-        // Skip the functions that are already implemented in the current contract as functions
-        if (functionsSelectors.includes(baseFunction.raw?.functionSelector)) continue;
+      // If the function is already in the new functions array, skip it
+      if (functions.some((func) => func.raw?.functionSelector === baseFunction.raw?.functionSelector)) continue;
 
-        // If the function is already in the new functions array, skip it
-        if (newFunctions.some((func) => func.raw?.functionSelector === baseFunction.raw?.functionSelector)) continue;
-
-        newFunctions.push(baseFunction);
-      }
+      functions.push(baseFunction);
     }
+  }
 
-    for (const func of newFunctions) {
-      content += await renderNodeMock(func);
-    }
+  for (const func of functions) {
+    content += await renderNodeMock(func);
   }
 
   return content;

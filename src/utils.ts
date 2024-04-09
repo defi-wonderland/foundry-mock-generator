@@ -1,7 +1,17 @@
 import Handlebars from 'handlebars';
 import path from 'path';
 import { glob } from 'fast-glob';
-import { VariableDeclaration, FunctionDefinition, ImportDirective, ASTNode, ASTKind, ASTReader, SourceUnit, compileSol } from 'solc-typed-ast';
+import {
+  VariableDeclaration,
+  FunctionDefinition,
+  ImportDirective,
+  ASTNode,
+  ASTKind,
+  ASTReader,
+  SourceUnit,
+  compileSol,
+  ContractDefinition,
+} from 'solc-typed-ast';
 import { userDefinedTypes, explicitTypes } from './types';
 import { readFileSync } from 'fs'; // TODO: Replace with fs/promises
 import { ensureDir, emptyDir } from 'fs-extra';
@@ -261,7 +271,8 @@ export async function getSourceUnits(rootPath: string, contractsDirectories: str
     includePath: [rootPath],
   });
 
-  const sourceUnits = new ASTReader().read(compiledFiles.data, ASTKind.Any, compiledFiles.files)
+  const sourceUnits = new ASTReader()
+    .read(compiledFiles.data, ASTKind.Any, compiledFiles.files)
     // Skip source units that are not in the contracts directories
     .filter((sourceUnit) => contractsDirectories.some((directory) => sourceUnit.absolutePath.includes(directory)));
 
@@ -280,4 +291,37 @@ export function smockableNode(node: ASTNode): boolean {
   }
 
   return true;
+}
+
+/**
+ * Renders the abstract functions that are not implemented in the current contract
+ * @param contract The contract to render the abstract functions from
+ * @returns The content of the functions
+ */
+export async function renderAbstractUnimplementedFunctions(contract: ContractDefinition): Promise<string> {
+  let content = '';
+
+  const existingSelectors = [...contract.vStateVariables, ...contract.vFunctions].map((node) => node.raw?.functionSelector);
+  const functions = [];
+
+  for (const base of contract.vLinearizedBaseContracts) {
+    // Skip the first contract, which is the current contract
+    if (base.id === contract.id) continue;
+
+    for (const baseFunction of base.vFunctions) {
+      // Skip the functions that are already implemented in the current contract
+      if (existingSelectors.includes(baseFunction.raw?.functionSelector)) continue;
+
+      // If the function is already in the new functions array, skip it
+      if (functions.some((func) => func.raw?.functionSelector === baseFunction.raw?.functionSelector)) continue;
+
+      functions.push(baseFunction);
+    }
+  }
+
+  for (const func of functions) {
+    content += await renderNodeMock(func);
+  }
+
+  return content;
 }

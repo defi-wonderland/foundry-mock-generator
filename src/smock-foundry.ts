@@ -7,6 +7,7 @@ import {
   getSourceUnits,
   smockableNode,
   compileSolidityFilesFoundry,
+  renderAbstractUnimplementedFunctions,
 } from './utils';
 import path from 'path';
 import { ensureDir } from 'fs-extra';
@@ -43,6 +44,10 @@ export async function generateMockContracts(
           let mockContent = '';
           // Libraries are not mocked
           if (contract.kind === 'library') continue;
+
+          if (contract.abstract) {
+            mockContent += await renderAbstractUnimplementedFunctions(contract);
+          }
 
           for (const node of contract.children) {
             if (!smockableNode(node)) continue;

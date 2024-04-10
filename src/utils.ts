@@ -11,8 +11,9 @@ import {
   SourceUnit,
   compileSol,
   ContractDefinition,
+  FunctionVisibility,
 } from 'solc-typed-ast';
-import { userDefinedTypes, explicitTypes } from './types';
+import { userDefinedTypes, explicitTypes, FullFunctionDefinition, SelectorsMap } from './types';
 import { readFileSync } from 'fs'; // TODO: Replace with fs/promises
 import { ensureDir, emptyDir } from 'fs-extra';
 import fs from 'fs/promises';
@@ -301,27 +302,92 @@ export function smockableNode(node: ASTNode): boolean {
 export async function renderAbstractUnimplementedFunctions(contract: ContractDefinition): Promise<string> {
   let content = '';
 
-  const existingSelectors = [...contract.vStateVariables, ...contract.vFunctions].map((node) => node.raw?.functionSelector);
-  const functions = [];
+  const currentSelectors = [...contract.vStateVariables, ...contract.vFunctions].map((node) => node.raw?.functionSelector);
+  const inheritedSelectors = getAllInheritedSelectors(contract);
 
-  for (const base of contract.vLinearizedBaseContracts) {
-    // Skip the first contract, which is the current contract
-    if (base.id === contract.id) continue;
+  for (const selector in inheritedSelectors) {
+    // Skip the functions that are already implemented in the current contract
+    if (currentSelectors.includes(selector)) continue;
 
-    for (const baseFunction of base.vFunctions) {
-      // Skip the functions that are already implemented in the current contract
-      if (existingSelectors.includes(baseFunction.raw?.functionSelector)) continue;
+    // Skip the functions that are already implemented in the inherited contracts
+    if (inheritedSelectors[selector].implemented) continue;
 
-      // If the function is already in the new functions array, skip it
-      if (functions.some((func) => func.raw?.functionSelector === baseFunction.raw?.functionSelector)) continue;
+    const func = inheritedSelectors[selector].function;
 
-      functions.push(baseFunction);
-    }
-  }
-
-  for (const func of functions) {
+    injectSelectors(func, inheritedSelectors);
     content += await renderNodeMock(func);
   }
 
   return content;
 }
+
+/**
+ * Gets all the inherited selectors of a contract, looping for all the base contracts
+ * @param contract The contract to get the inherited selectors from
+ * @param selectors The map of selectors to update
+ * @returns The updated map of selectors
+ */
+export const getAllInheritedSelectors = (contract: ContractDefinition, selectors: SelectorsMap = {}): SelectorsMap => {
+  for (const base of contract.vLinearizedBaseContracts) {
+    if (base.id === contract.id) continue;
+
+    for (const variable of base.vStateVariables) {
+      const selector = variable.raw?.functionSelector;
+
+      if (!selector) continue;
+
+      selectors[selector] = {
+        implemented: true,
+      };
+    }
+
+    for (const func of base.vFunctions) {
+      let selector = func.raw?.functionSelector;
+      selector = func.isConstructor ? 'constructor' : selector;
+
+      if (!selector) continue;
+
+      const contracts = selectors[selector]?.contracts;
+      const isImplemented = selectors[selector]?.implemented;
+
+      selectors[selector] = {
+        implemented: isImplemented || (!func.isConstructor && func.implemented),
+        contracts: contracts ? contracts.add(base.name) : new Set([base.name]),
+        function: func,
+      };
+    }
+
+    getAllInheritedSelectors(base, selectors);
+  }
+
+  return selectors;
+};
+
+/**
+ * Injects the selectors into the function definition
+ * @param node The node to inject the selectors into
+ * @param selectors The map of selectors to inject
+ */
+export const injectSelectors = (node: ASTNode, selectors: SelectorsMap): void => {
+  if (node instanceof FunctionDefinition) {
+    const nodeWithSelectors = node as FullFunctionDefinition;
+    nodeWithSelectors.selectors = selectors;
+    nodeWithSelectors.visibility = FunctionVisibility.Public;
+  }
+};
+
+/**
+ * Extracts the function overrides to render
+ * @param node The node to extract the overrides from
+ * @returns The overrides string or null if there are no overrides
+ */
+export const extractOverrides = (node: FullFunctionDefinition): string | null => {
+  if (!node.selectors) return null;
+
+  const selector = node.raw?.functionSelector;
+  const contractsSet = node.selectors[selector];
+
+  if (!contractsSet || contractsSet.contracts.size <= 1) return null;
+
+  return `(${Array.from(contractsSet.contracts).join(', ')})`;
+};

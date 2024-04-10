@@ -6,8 +6,9 @@ import {
   MappingVariableContext,
   ArrayVariableContext,
   StateVariableContext,
+  FullFunctionDefinition,
 } from './types';
-import { sanitizeParameterType, explicitTypeStorageLocation, extractParameters, extractReturnParameters } from './utils';
+import { sanitizeParameterType, explicitTypeStorageLocation, extractParameters, extractReturnParameters, extractOverrides } from './utils';
 import { ContractDefinition, FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
 
 export function internalFunctionContext(node: FunctionDefinition): InternalFunctionContext {
@@ -76,6 +77,9 @@ export function externalOrPublicFunctionContext(node: FunctionDefinition): Exter
     params = `${inputs}, ${outputs}`;
   }
 
+  // Extract function overrides
+  const overrides = extractOverrides(node as FullFunctionDefinition);
+
   // Save the external function information
   return {
     functionName: node.name,
@@ -88,6 +92,7 @@ export function externalOrPublicFunctionContext(node: FunctionDefinition): Exter
     visibility: node.visibility,
     stateMutability: stateMutability,
     implemented: node.implemented,
+    overrides: overrides,
   };
 }
 

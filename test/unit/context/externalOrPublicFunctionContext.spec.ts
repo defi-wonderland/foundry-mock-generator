@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { DataLocation, FunctionStateMutability, FunctionVisibility } from 'solc-typed-ast';
 import { mockFunctionDefinition, mockParameterList, mockVariableDeclaration } from '../../mocks';
 import { externalOrPublicFunctionContext } from '../../../src/context';
+import { FullFunctionDefinition, SelectorsMap } from '../../../src/types';
 
 describe('externalOrPublicFunctionContext', () => {
   const defaultAttributes = {
@@ -37,6 +38,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -59,6 +61,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -78,6 +81,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -97,6 +101,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -119,6 +124,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -143,6 +149,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -167,6 +174,7 @@ describe('externalOrPublicFunctionContext', () => {
       implemented: true,
       stateMutability: '',
       visibility: 'external',
+      overrides: null,
     });
   });
 
@@ -176,5 +184,35 @@ describe('externalOrPublicFunctionContext', () => {
       const context = externalOrPublicFunctionContext(node);
       expect(context.implemented).to.be.equal(implemented);
     }
+  });
+
+  it('process functions with overrides', () => {
+    const node = mockFunctionDefinition({ ...defaultAttributes, raw: { functionSelector: '0x12345678' } });
+
+    const selectors: SelectorsMap = {
+      '0x12345678': {
+        implemented: true,
+        contracts: new Set(['TestContractA', 'TestContractB']),
+      },
+    };
+
+    const nodeWithSelectors = node as FullFunctionDefinition;
+    nodeWithSelectors.selectors = selectors;
+
+    const context = externalOrPublicFunctionContext(nodeWithSelectors);
+
+    expect(context).to.eql({
+      functionName: 'testInternalFunction',
+      signature: 'testInternalFunction()',
+      parameters: '',
+      inputs: '',
+      outputs: '',
+      inputNames: [],
+      outputNames: [],
+      implemented: true,
+      stateMutability: '',
+      visibility: 'external',
+      overrides: '(TestContractA, TestContractB)',
+    });
   });
 });

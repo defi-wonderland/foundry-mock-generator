@@ -1,3 +1,5 @@
+import { FunctionDefinition } from 'solc-typed-ast';
+
 export const userDefinedTypes = ['contract', 'enum', 'struct'];
 export const explicitTypes = ['string', 'bytes', 'mapping', 'struct'];
 
@@ -19,6 +21,7 @@ export interface ExternalFunctionContext {
   visibility: string;
   stateMutability: string;
   implemented: boolean;
+  overrides?: string;
 }
 
 export interface InternalFunctionContext extends Omit<ExternalFunctionContext, 'visibility' | 'stateMutability'> {
@@ -34,31 +37,31 @@ export interface ImportContext {
 
 export interface MappingVariableContext {
   setFunction: {
-    functionName: string,
-    keyTypes: string[],
-    valueType: string,
-  },
+    functionName: string;
+    keyTypes: string[];
+    valueType: string;
+  };
   mockFunction: {
-    functionName: string,
-    keyTypes: string[],
-    valueType: string,
-    baseType: string,
-  },
-  isInternal: boolean,
-  isArray: boolean,
-  isStructArray: boolean,
+    functionName: string;
+    keyTypes: string[];
+    valueType: string;
+    baseType: string;
+  };
+  isInternal: boolean;
+  isArray: boolean;
+  isStructArray: boolean;
 }
 
 export interface ArrayVariableContext {
   setFunction: {
-    functionName: string,
-    arrayType: string,
-    paramName: string,
+    functionName: string;
+    arrayType: string;
+    paramName: string;
   };
   mockFunction: {
-    functionName: string,
-    arrayType: string,
-    baseType: string,
+    functionName: string;
+    arrayType: string;
+    baseType: string;
   };
   isInternal: boolean;
   isStructArray: boolean;
@@ -67,12 +70,23 @@ export interface ArrayVariableContext {
 export interface StateVariableContext {
   isInternal: boolean;
   setFunction: {
-    functionName: string,
-    paramType: string,
-    paramName: string,
+    functionName: string;
+    paramType: string;
+    paramName: string;
   };
   mockFunction: {
-    functionName: string,
-    paramType: string,
+    functionName: string;
+    paramType: string;
   };
 }
+interface Selector {
+  implemented: boolean;
+  contracts?: Set<string>;
+  function?: FunctionDefinition;
+}
+
+export interface SelectorsMap {
+  [selector: string]: Selector;
+}
+
+export type FullFunctionDefinition = FunctionDefinition & { selectors: SelectorsMap };

@@ -1,3 +1,4 @@
+{{#unless hasNestedMapping}}
 function set_{{setFunction.functionName}}({{#each setFunction.keyTypes}}{{this}} _key{{@index}}, {{/each}}{{setFunction.valueType}} _value) public {
   {{#if isStructArray}}
   for (uint256 _i; _i < _value.length; ++_i) {
@@ -16,4 +17,5 @@ function mock_call_{{mockFunction.functionName}}({{#each mockFunction.keyTypes}}
     abi.encode(_value)
   );
 }
+{{/unless}}
 {{/unless}}

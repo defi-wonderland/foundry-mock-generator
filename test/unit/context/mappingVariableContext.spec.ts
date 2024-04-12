@@ -1,5 +1,5 @@
 import { StateVariableVisibility } from 'solc-typed-ast';
-import { mockArrayTypeName, mockMapping, mockTypeName, mockVariableDeclaration } from '../../mocks';
+import { mockArrayTypeName, mockMapping, mockTypeName, mockUserDefinedTypeName, mockVariableDeclaration } from '../../mocks';
 import { mappingVariableContext } from '../../../src/context';
 import { expect } from 'chai';
 
@@ -30,6 +30,7 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: false,
       isStructArray: false,
+      hasNestedMapping: false,
     });
   });
 
@@ -59,6 +60,7 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: false,
       isStructArray: false,
+      hasNestedMapping: false,
     });
   });
 
@@ -88,6 +90,7 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: true,
       isStructArray: false,
+      hasNestedMapping: false,
     });
   });
 
@@ -110,6 +113,7 @@ describe('mappingVariableContext', () => {
       isInternal: true,
       isArray: false,
       isStructArray: false,
+      hasNestedMapping: false,
     });
   });
 
@@ -139,6 +143,7 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: true,
       isStructArray: true,
+      hasNestedMapping: false,
     });
   });
 
@@ -172,6 +177,7 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: false,
       isStructArray: false,
+      hasNestedMapping: false,
     });
   });
 
@@ -205,6 +211,7 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: true,
       isStructArray: true,
+      hasNestedMapping: false,
     });
   });
 
@@ -242,6 +249,83 @@ describe('mappingVariableContext', () => {
       isInternal: false,
       isArray: false,
       isStructArray: false,
+      hasNestedMapping: false,
+    });
+  });
+
+  it('should return the correct context for a mapping with a struct with nested mappings', () => {
+    const node = mockVariableDeclaration({
+      ...defaultAttributes,
+      typeString: 'mapping(uint256 => struct MyStruct)',
+      vType: mockMapping({
+        vKeyType: mockTypeName({ typeString: 'uint256' }),
+        vValueType: mockUserDefinedTypeName({
+          typeString: 'struct MyStruct',
+          vReferencedDeclaration: mockUserDefinedTypeName({ children: [mockTypeName({ typeString: 'mapping(uint256 => uint256)' })] }),
+        }),
+      }),
+    });
+    const context = mappingVariableContext(node);
+
+    expect(context).to.eql({
+      setFunction: {
+        functionName: 'testMappingVariable',
+        keyTypes: ['uint256'],
+        valueType: 'MyStruct memory',
+      },
+      mockFunction: {
+        functionName: 'testMappingVariable',
+        keyTypes: ['uint256'],
+        valueType: 'MyStruct memory',
+        baseType: 'MyStruct memory',
+      },
+      isInternal: false,
+      isArray: false,
+      isStructArray: false,
+      hasNestedMapping: true,
+    });
+  });
+
+  it('should return the correct context for a nested struct array mapping with nested mapping', () => {
+    const node = mockVariableDeclaration({
+      ...defaultAttributes,
+      typeString: 'mapping(uint256 => mapping(uint256 => struct MyStruct[]))',
+      vType: mockMapping({
+        vKeyType: mockTypeName({ typeString: 'uint256' }),
+        vValueType: mockMapping({
+          typeString: 'mapping(uint256 => struct MyStruct[])',
+          vKeyType: mockTypeName({ typeString: 'uint256' }),
+          vValueType: mockArrayTypeName({
+            typeString: 'struct MyStruct[]',
+            vBaseType: mockUserDefinedTypeName({
+              typeString: 'struct MyStruct',
+              vReferencedDeclaration: mockTypeName({
+                typeString: 'struct MyStruct',
+                children: [mockTypeName({ typeString: 'mapping(uint256 => uint256)' })],
+              }),
+            }),
+          }),
+        }),
+      }),
+    });
+    const context = mappingVariableContext(node);
+
+    expect(context).to.eql({
+      setFunction: {
+        functionName: 'testMappingVariable',
+        keyTypes: ['uint256', 'uint256'],
+        valueType: 'MyStruct[] memory',
+      },
+      mockFunction: {
+        functionName: 'testMappingVariable',
+        keyTypes: ['uint256', 'uint256'],
+        valueType: 'MyStruct[] memory',
+        baseType: 'MyStruct memory',
+      },
+      isInternal: false,
+      isArray: true,
+      isStructArray: true,
+      hasNestedMapping: true,
     });
   });
 });

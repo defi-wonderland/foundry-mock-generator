@@ -9,6 +9,7 @@ import {
   TypeName,
   ArrayTypeName,
   Mapping,
+  UserDefinedTypeName,
 } from 'solc-typed-ast';
 
 export function mockFunctionDefinition(mockFunctionDefinition: Partial<FunctionDefinition>): FunctionDefinition {
@@ -49,4 +50,8 @@ export function mockTypeName(mockTypeName: Partial<TypeName>): TypeName {
 
 export function mockMapping(mockMapping: Partial<Mapping>): Mapping {
   return mockMapping as Mapping;
+}
+
+export function mockUserDefinedTypeName(mockTypeName: Partial<UserDefinedTypeName>): UserDefinedTypeName {
+  return mockTypeName as UserDefinedTypeName;
 }

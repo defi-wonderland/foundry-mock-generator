@@ -50,6 +50,7 @@ export interface MappingVariableContext {
   isInternal: boolean;
   isArray: boolean;
   isStructArray: boolean;
+  hasNestedMapping: boolean;
 }
 
 export interface ArrayVariableContext {

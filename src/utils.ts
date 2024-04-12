@@ -12,6 +12,9 @@ import {
   compileSol,
   ContractDefinition,
   FunctionVisibility,
+  TypeName,
+  UserDefinedTypeName,
+  ArrayTypeName,
 } from 'solc-typed-ast';
 import { userDefinedTypes, explicitTypes, FullFunctionDefinition, SelectorsMap } from './types';
 import { readFileSync } from 'fs'; // TODO: Replace with fs/promises
@@ -322,7 +325,8 @@ export async function renderAbstractUnimplementedFunctions(contract: ContractDef
 }
 
 /**
- * Gets all the inherited selectors of a contract, looping for all the base contracts
+ * Gets all the inherited selectors of a contract
+ * @dev This function is recursive, loops through all the base contracts and their base contracts
  * @param contract The contract to get the inherited selectors from
  * @param selectors The map of selectors to update
  * @returns The updated map of selectors
@@ -390,4 +394,44 @@ export const extractOverrides = (node: FullFunctionDefinition): string | null =>
   if (!contractsSet || contractsSet.contracts.size <= 1) return null;
 
   return `(${Array.from(contractsSet.contracts).join(', ')})`;
+};
+
+/**
+ * Returns if there are nested mappings in a struct
+ * @dev This function is recursive, loops through all the fields of the struct and nested structs
+ * @param node The struct to extract the mappings from
+ * @returns True if there are nested mappings, false otherwise
+ */
+export const hasNestedMappings = (node: TypeName): boolean => {
+  let result = false;
+
+  const isStruct = node.typeString.startsWith('struct');
+  if (!isStruct) return false;
+
+  const isArray = node.typeString.includes('[]');
+  const structTypeName = (isArray ? (node as ArrayTypeName).vBaseType : node) as UserDefinedTypeName;
+  if (!structTypeName) return false;
+
+  const struct = structTypeName?.vReferencedDeclaration;
+  if (!struct) return false;
+
+  const fields = struct.children || [];
+
+  for (const member of fields) {
+    const field = member as TypeName;
+    if (!field.typeString) continue;
+
+    if (field.typeString.startsWith('mapping')) return true;
+
+    if (field.typeString.startsWith('struct')) {
+      const fieldType = (field as VariableDeclaration).vType;
+      const isArray = field.typeString.includes('[]');
+
+      const nestedStruct = isArray ? (fieldType as ArrayTypeName).vBaseType : fieldType;
+
+      result = result || hasNestedMappings(nestedStruct);
+    }
+  }
+
+  return result;
 };

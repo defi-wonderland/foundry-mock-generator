@@ -14,7 +14,7 @@ import {
   extractParameters,
   extractReturnParameters,
   extractOverrides,
-  extractStructsNestedMappings,
+  hasNestedMappings,
 } from './utils';
 import { ContractDefinition, FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
 
@@ -162,12 +162,8 @@ export function mappingVariableContext(node: VariableDeclaration): MappingVariab
   // Struct array flag
   const isStructArray: boolean = isArray && mappingTypeNameNode.typeString.startsWith('struct ');
 
-  // Struct flag
-  const isStruct: boolean = mappingTypeNameNode.typeString.startsWith('struct ');
-
-  // Check if the struct has nested mappings
-  let hasNestedMapping = false;
-  if (isStruct) hasNestedMapping = extractStructsNestedMappings(mappingTypeNameNode);
+  // Check if value is a struct and has nested mappings
+  const hasNestedMapping = hasNestedMappings(mappingTypeNameNode);
 
   // If the mapping is internal we don't create mockCall for it
   const isInternal: boolean = node.visibility === 'internal';

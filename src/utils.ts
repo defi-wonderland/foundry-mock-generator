@@ -397,15 +397,18 @@ export const extractOverrides = (node: FullFunctionDefinition): string | null =>
 };
 
 /**
- * Extracts if there are nested mappings in a struct
+ * Returns if there are nested mappings in a struct
  * @dev This function is recursive, loops through all the fields of the struct and nested structs
  * @param node The struct to extract the mappings from
  * @returns True if there are nested mappings, false otherwise
  */
-export const extractStructsNestedMappings = (node: TypeName): boolean => {
+export const hasNestedMappings = (node: TypeName): boolean => {
   let result = false;
-  const isArray = node.typeString.includes('[]');
 
+  const isStruct = node.typeString.startsWith('struct');
+  if (!isStruct) return false;
+
+  const isArray = node.typeString.includes('[]');
   const structTypeName = (isArray ? (node as ArrayTypeName).vBaseType : node) as UserDefinedTypeName;
   if (!structTypeName) return false;
 
@@ -426,7 +429,7 @@ export const extractStructsNestedMappings = (node: TypeName): boolean => {
 
       const nestedStruct = isArray ? (fieldType as ArrayTypeName).vBaseType : fieldType;
 
-      result = result || extractStructsNestedMappings(nestedStruct);
+      result = result || hasNestedMappings(nestedStruct);
     }
   }
 

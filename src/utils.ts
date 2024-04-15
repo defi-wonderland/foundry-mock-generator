@@ -15,6 +15,7 @@ import {
   TypeName,
   UserDefinedTypeName,
   ArrayTypeName,
+  FunctionKind,
 } from 'solc-typed-ast';
 import { userDefinedTypes, explicitTypes, FullFunctionDefinition, SelectorsMap } from './types';
 import { readFileSync } from 'fs'; // TODO: Replace with fs/promises
@@ -152,7 +153,7 @@ export function extractReturnParameters(returnParameters: VariableDeclaration[])
 
 export async function renderNodeMock(node: ASTNode): Promise<string> {
   const partial = partialName(node);
-  if (partial === undefined) return '';
+  if (!partial) return '';
 
   const CONTEXT_RETRIEVERS = {
     'mapping-state-variable': mappingVariableContext,
@@ -164,7 +165,10 @@ export async function renderNodeMock(node: ASTNode): Promise<string> {
     import: importContext,
   };
 
-  const context = CONTEXT_RETRIEVERS[partial](node);
+  const contextRetriever = CONTEXT_RETRIEVERS[partial];
+  if (!contextRetriever) return '';
+
+  const context = contextRetriever(node);
   // TODO: Handle a possible invalid partial name
   const partialContent = await readPartial(partial);
   const template = Handlebars.compile(partialContent);
@@ -183,6 +187,8 @@ export function partialName(node: ASTNode): string {
   } else if (node instanceof FunctionDefinition) {
     if (node.isConstructor) {
       return 'constructor';
+    } else if (node.kind === FunctionKind.Fallback || node.kind === FunctionKind.Receive) {
+      return null;
     } else if (node.visibility === 'external' || node.visibility === 'public') {
       return 'external-or-public-function';
     } else if (node.visibility === 'internal' && node.virtual) {

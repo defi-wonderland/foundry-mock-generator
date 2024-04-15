@@ -451,10 +451,8 @@ export const hasNestedMappings = (node: TypeName): boolean => {
  * @param node The struct to extract the fields from
  * @returns The fields names of the struct
  */
-export const extractStructFields = (node: TypeName): string[] | null => {
+export const extractStructFieldsNames = (node: TypeName): string[] | null => {
   const fields = getStructFields(node);
-
-  if (!fields.length) return null;
 
   return fields.map((field) => (field as VariableDeclaration).name).filter((name) => name);
 };

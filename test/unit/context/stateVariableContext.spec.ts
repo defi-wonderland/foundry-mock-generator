@@ -1,5 +1,5 @@
 import { DataLocation, StateVariableVisibility } from 'solc-typed-ast';
-import { mockTypeName, mockUserDefinedTypeName, mockVariableDeclaration } from '../../mocks';
+import { mockUserDefinedTypeName, mockVariableDeclaration } from '../../mocks';
 import { stateVariableContext } from '../../../src/context';
 import { expect } from 'chai';
 
@@ -24,7 +24,7 @@ describe('stateVariableContext', () => {
       mockFunction: {
         functionName: 'testStateVariable',
         paramType: 'uint256',
-        structFields: null,
+        structFields: [],
       },
       isInternal: false,
       isStruct: false,
@@ -44,7 +44,7 @@ describe('stateVariableContext', () => {
       mockFunction: {
         functionName: 'testStateVariable',
         paramType: 'uint256',
-        structFields: null,
+        structFields: [],
       },
       isInternal: true,
       isStruct: false,
@@ -64,7 +64,7 @@ describe('stateVariableContext', () => {
       mockFunction: {
         functionName: 'testStateVariable',
         paramType: 'string memory',
-        structFields: null,
+        structFields: [],
       },
       isInternal: false,
       isStruct: false,

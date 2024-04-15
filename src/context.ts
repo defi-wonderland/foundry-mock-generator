@@ -15,7 +15,7 @@ import {
   extractReturnParameters,
   extractOverrides,
   hasNestedMappings,
-  extractStructFields,
+  extractStructFieldsNames,
 } from './utils';
 import { ContractDefinition, FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
 
@@ -167,7 +167,7 @@ export function mappingVariableContext(node: VariableDeclaration): MappingVariab
   const hasNestedMapping = hasNestedMappings(mappingTypeNameNode);
 
   // Check if the variable is a struct and get its fields
-  const structFields = extractStructFields(mappingTypeNameNode);
+  const structFields = extractStructFieldsNames(mappingTypeNameNode);
 
   // If the mapping is internal we don't create mockCall for it
   const isInternal: boolean = node.visibility === 'internal';
@@ -187,7 +187,7 @@ export function mappingVariableContext(node: VariableDeclaration): MappingVariab
     },
     isInternal: isInternal,
     isArray: isArray,
-    isStruct: !!structFields,
+    isStruct: structFields.length > 0,
     isStructArray: isStructArray,
     hasNestedMapping,
   };
@@ -207,7 +207,7 @@ export function arrayVariableContext(node: VariableDeclaration): ArrayVariableCo
   const isStructArray: boolean = node.typeString.startsWith('struct ');
 
   // Check if the variable is a struct and get its fields
-  const structFields = extractStructFields(node.vType);
+  const structFields = extractStructFieldsNames(node.vType);
 
   // If the array is internal we don't create mockCall for it
   const isInternal: boolean = node.visibility === 'internal';
@@ -240,7 +240,7 @@ export function stateVariableContext(node: VariableDeclaration): StateVariableCo
   const isInternal: boolean = node.visibility === 'internal';
 
   // Check if the variable is a struct and get its fields
-  const structFields = extractStructFields(node.vType);
+  const structFields = extractStructFieldsNames(node.vType);
 
   // Save the state variable information
   return {
@@ -255,6 +255,6 @@ export function stateVariableContext(node: VariableDeclaration): StateVariableCo
       structFields,
     },
     isInternal: isInternal,
-    isStruct: !!structFields,
+    isStruct: structFields.length > 0,
   };
 }

@@ -26,9 +26,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256'],
         valueType: 'uint256',
         baseType: 'uint256',
+        structFields: [],
       },
       isInternal: false,
       isArray: false,
+      isStruct: false,
       isStructArray: false,
       hasNestedMapping: false,
     });
@@ -56,9 +58,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256'],
         valueType: 'MyStruct memory',
         baseType: 'MyStruct memory',
+        structFields: [],
       },
       isInternal: false,
       isArray: false,
+      isStruct: false,
       isStructArray: false,
       hasNestedMapping: false,
     });
@@ -86,9 +90,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256'],
         valueType: 'uint256[] memory',
         baseType: 'uint256',
+        structFields: [],
       },
       isInternal: false,
       isArray: true,
+      isStruct: false,
       isStructArray: false,
       hasNestedMapping: false,
     });
@@ -109,9 +115,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256'],
         valueType: 'uint256',
         baseType: 'uint256',
+        structFields: [],
       },
       isInternal: true,
       isArray: false,
+      isStruct: false,
       isStructArray: false,
       hasNestedMapping: false,
     });
@@ -123,9 +131,18 @@ describe('mappingVariableContext', () => {
       typeString: 'mapping(uint256 => struct MyStruct[])',
       vType: mockMapping({
         vKeyType: mockTypeName({ typeString: 'uint256' }),
-        vValueType: mockArrayTypeName({ vBaseType: mockTypeName({ typeString: 'struct MyStruct' }), typeString: 'struct MyStruct[]' }),
+        vValueType: mockArrayTypeName({
+          typeString: 'struct MyStruct[]',
+          vBaseType: mockUserDefinedTypeName({
+            typeString: 'struct MyStruct',
+            vReferencedDeclaration: mockTypeName({
+              children: [mockVariableDeclaration({ name: 'field1' }), mockVariableDeclaration({ name: 'field2' })],
+            }),
+          }),
+        }),
       }),
     });
+
     const context = mappingVariableContext(node);
 
     expect(context).to.eql({
@@ -139,9 +156,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256'],
         valueType: 'MyStruct[] memory',
         baseType: 'MyStruct memory',
+        structFields: ['field1', 'field2'],
       },
       isInternal: false,
       isArray: true,
+      isStruct: true,
       isStructArray: true,
       hasNestedMapping: false,
     });
@@ -173,9 +192,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256', 'uint256'],
         valueType: 'uint256',
         baseType: 'uint256',
+        structFields: [],
       },
       isInternal: false,
       isArray: false,
+      isStruct: false,
       isStructArray: false,
       hasNestedMapping: false,
     });
@@ -190,7 +211,15 @@ describe('mappingVariableContext', () => {
         vValueType: mockMapping({
           typeString: 'mapping(uint256 => struct MyStruct[])',
           vKeyType: mockTypeName({ typeString: 'uint256' }),
-          vValueType: mockArrayTypeName({ vBaseType: mockTypeName({ typeString: 'struct MyStruct' }), typeString: 'struct MyStruct[]' }),
+          vValueType: mockArrayTypeName({
+            typeString: 'struct MyStruct[]',
+            vBaseType: mockUserDefinedTypeName({
+              typeString: 'struct MyStruct',
+              vReferencedDeclaration: mockTypeName({
+                children: [mockVariableDeclaration({ name: 'field1' }), mockVariableDeclaration({ name: 'field2' })],
+              }),
+            }),
+          }),
         }),
       }),
     });
@@ -207,9 +236,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256', 'uint256'],
         valueType: 'MyStruct[] memory',
         baseType: 'MyStruct memory',
+        structFields: ['field1', 'field2'],
       },
       isInternal: false,
       isArray: true,
+      isStruct: true,
       isStructArray: true,
       hasNestedMapping: false,
     });
@@ -245,9 +276,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256', 'uint128', 'uint64'],
         valueType: 'uint8',
         baseType: 'uint8',
+        structFields: [],
       },
       isInternal: false,
       isArray: false,
+      isStruct: false,
       isStructArray: false,
       hasNestedMapping: false,
     });
@@ -261,7 +294,12 @@ describe('mappingVariableContext', () => {
         vKeyType: mockTypeName({ typeString: 'uint256' }),
         vValueType: mockUserDefinedTypeName({
           typeString: 'struct MyStruct',
-          vReferencedDeclaration: mockUserDefinedTypeName({ children: [mockTypeName({ typeString: 'mapping(uint256 => uint256)' })] }),
+          vReferencedDeclaration: mockUserDefinedTypeName({
+            children: [
+              mockVariableDeclaration({ name: 'field1', typeString: 'mapping(uint256 => uint256)' }),
+              mockVariableDeclaration({ name: 'field2', typeString: 'uint256)' }),
+            ],
+          }),
         }),
       }),
     });
@@ -278,9 +316,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256'],
         valueType: 'MyStruct memory',
         baseType: 'MyStruct memory',
+        structFields: ['field1', 'field2'],
       },
       isInternal: false,
       isArray: false,
+      isStruct: true,
       isStructArray: false,
       hasNestedMapping: true,
     });
@@ -301,7 +341,10 @@ describe('mappingVariableContext', () => {
               typeString: 'struct MyStruct',
               vReferencedDeclaration: mockTypeName({
                 typeString: 'struct MyStruct',
-                children: [mockTypeName({ typeString: 'mapping(uint256 => uint256)' })],
+                children: [
+                  mockVariableDeclaration({ name: 'field1', typeString: 'mapping(uint256 => uint256)' }),
+                  mockVariableDeclaration({ name: 'field2', typeString: 'uint256)' }),
+                ],
               }),
             }),
           }),
@@ -321,9 +364,11 @@ describe('mappingVariableContext', () => {
         keyTypes: ['uint256', 'uint256'],
         valueType: 'MyStruct[] memory',
         baseType: 'MyStruct memory',
+        structFields: ['field1', 'field2'],
       },
       isInternal: false,
       isArray: true,
+      isStruct: true,
       isStructArray: true,
       hasNestedMapping: true,
     });

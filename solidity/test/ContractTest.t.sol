@@ -205,12 +205,12 @@ contract E2EMockContractTest_Mock_call_Simple_Vars is CommonE2EBase {
     assertEq(_contractTest.bytes32Variable(), bytes32('40'));
   }
 
-  // function test_MockCall_MyStructVar() public {
-  //   _contractTest.mock_call_myStructVariable(IContractTest.MyStruct(100, 'hundred'));
-  //   (uint256 _value, string memory _name) = _contractTest.myStructVariable();
-  //   assertEq(_value, 100);
-  //   assertEq(_name, 'hundred');
-  // }
+  function test_MockCall_MyStructVar() public {
+    _contractTest.mock_call_myStructVariable(IContractTest.MyStruct(100, 'hundred'));
+    (uint256 _value, string memory _name) = _contractTest.myStructVariable();
+    assertEq(_value, 100);
+    assertEq(_name, 'hundred');
+  }
 
   function test_MockCall_InternalUintVar_Fail() public {
     // no mock calls for internal vars
@@ -236,12 +236,12 @@ contract E2EMockContractTest_Mock_call_Array_Vars is CommonE2EBase {
     assertEq(_contractTest.bytes32Array(0), bytes32('40'));
   }
 
-  // function test_MockCall_MyStructArray() public {
-  //   _contractTest.mock_call_myStructArray(0, IContractTest.MyStruct(100, 'hundred'));
-  //   (uint256 _value, string memory _name) = _contractTest.myStructArray(0);
-  //   assertEq(_value, 100);
-  //   assertEq(_name, 'hundred');
-  // }
+  function test_MockCall_MyStructArray() public {
+    _contractTest.mock_call_myStructArray(0, IContractTest.MyStruct(100, 'hundred'));
+    (uint256 _value, string memory _name) = _contractTest.myStructArray(0);
+    assertEq(_value, 100);
+    assertEq(_name, 'hundred');
+  }
 
   function test_MockCall_InternalAddressArray_Fail() public {
     // no mock calls for internal vars
@@ -267,24 +267,24 @@ contract E2EMockContractTest_Mock_call_Mapping_Vars is CommonE2EBase {
     assertEq(_contractTest.bytes32ToBytes(bytes32('40')), bytes('50'));
   }
 
-  // function test_MockCall_Uint256ToMyStructMappings() public {
-  //   _contractTest.mock_call_uint256ToMyStruct(10, IContractTest.MyStruct(100, 'hundred'));
-  //   (uint256 _value, string memory _name) = _contractTest.uint256ToMyStruct(10);
-  //   assertEq(_value, 100);
-  //   assertEq(_name, 'hundred');
-  // }
+  function test_MockCall_Uint256ToMyStructMappings() public {
+    _contractTest.mock_call_uint256ToMyStruct(10, IContractTest.MyStruct(100, 'hundred'));
+    (uint256 _value, string memory _name) = _contractTest.uint256ToMyStruct(10);
+    assertEq(_value, 100);
+    assertEq(_name, 'hundred');
+  }
 
   function test_MockCall_Uint256ToAddressArrayMappings() public {
     _contractTest.mock_call_uint256ToAddressArray(10, 0, _user);
     assertEq(_contractTest.uint256ToAddressArray(10, 0), _user);
   }
 
-  // function test_MockCall_Uint256ToMyStructArrayMappings() public {
-  //   _contractTest.mock_call_uint256ToMyStructArray(10, 0, IContractTest.MyStruct(100, 'hundred'));
-  //   (uint256 _value, string memory _name) = _contractTest.uint256ToMyStructArray(10, 0);
-  //   assertEq(_value, 100);
-  //   assertEq(_name, 'hundred');
-  // }
+  function test_MockCall_Uint256ToMyStructArrayMappings() public {
+    _contractTest.mock_call_uint256ToMyStructArray(10, 0, IContractTest.MyStruct(100, 'hundred'));
+    (uint256 _value, string memory _name) = _contractTest.uint256ToMyStructArray(10, 0);
+    assertEq(_value, 100);
+    assertEq(_name, 'hundred');
+  }
 
   function test_MockCall_Uint256ToAddressToBytes32Mappings() public {
     _contractTest.mock_call_uint256ToAddressToBytes32(10, _owner, bytes32('40'));

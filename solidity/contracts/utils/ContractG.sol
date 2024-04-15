@@ -25,7 +25,12 @@ contract ContractG {
     Set _set;
   }
 
-  mapping(bytes32 _disputeId => bool _finished) internal _finished;
+  struct NestedStruct {
+    uint256 _counter;
+    CommonStruct _common;
+  }
+
+  mapping(bytes32 _disputeId => bool _finished) public _finished;
 
   mapping(bytes32 _disputeId => Set _votersSet) internal _votersA;
 
@@ -36,4 +41,8 @@ contract ContractG {
   mapping(bytes32 _disputeId => AddressSets _votersSets) internal _votersD;
 
   mapping(bytes32 _disputeId => ComplexStruct _complexStruct) internal _complexStructs;
+
+  mapping(bytes32 _disputeId => NestedStruct _nestedStruct) public _nestedStructs;
+
+  NestedStruct public nestedStruct;
 }

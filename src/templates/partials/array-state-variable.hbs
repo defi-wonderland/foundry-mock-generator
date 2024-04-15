@@ -13,7 +13,7 @@ function mock_call_{{mockFunction.functionName}}(uint256 _index, {{mockFunction.
   vm.mockCall(
     address(this),
     abi.encodeWithSignature('{{mockFunction.functionName}}(uint256)', _index),
-    abi.encode(_value)
+    abi.encode({{#if isStructArray}}{{#each mockFunction.structFields}}_value.{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}_value{{/if}})
   );
 }
 {{/unless}}

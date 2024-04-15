@@ -3,11 +3,11 @@ function set_{{setFunction.functionName}}({{setFunction.paramType}} _{{setFuncti
 }
 {{#unless isInternal}}
 
-function mock_call_{{mockFunction.functionName}}({{mockFunction.paramType}} _{{mockFunction.functionName}}) public {
+function mock_call_{{mockFunction.functionName}}({{mockFunction.paramType}} _value) public {
   vm.mockCall(
     address(this),
     abi.encodeWithSignature('{{mockFunction.functionName}}()'),
-    abi.encode(_{{mockFunction.functionName}})
+    abi.encode({{#if isStruct}}{{#each mockFunction.structFields}}_value.{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}_value{{/if}})
   );
 }
 {{/unless}}

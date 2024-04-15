@@ -15,6 +15,7 @@ import {
   extractReturnParameters,
   extractOverrides,
   hasNestedMappings,
+  extractStructFields,
 } from './utils';
 import { ContractDefinition, FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
 
@@ -165,6 +166,9 @@ export function mappingVariableContext(node: VariableDeclaration): MappingVariab
   // Check if value is a struct and has nested mappings
   const hasNestedMapping = hasNestedMappings(mappingTypeNameNode);
 
+  // Check if the variable is a struct and get its fields
+  const structFields = extractStructFields(mappingTypeNameNode);
+
   // If the mapping is internal we don't create mockCall for it
   const isInternal: boolean = node.visibility === 'internal';
 
@@ -179,9 +183,11 @@ export function mappingVariableContext(node: VariableDeclaration): MappingVariab
       keyTypes: keyTypes,
       valueType: valueType,
       baseType: baseType,
+      structFields,
     },
     isInternal: isInternal,
     isArray: isArray,
+    isStruct: !!structFields,
     isStructArray: isStructArray,
     hasNestedMapping,
   };
@@ -200,6 +206,9 @@ export function arrayVariableContext(node: VariableDeclaration): ArrayVariableCo
   // Struct flag
   const isStructArray: boolean = node.typeString.startsWith('struct ');
 
+  // Check if the variable is a struct and get its fields
+  const structFields = extractStructFields(node.vType);
+
   // If the array is internal we don't create mockCall for it
   const isInternal: boolean = node.visibility === 'internal';
 
@@ -213,6 +222,7 @@ export function arrayVariableContext(node: VariableDeclaration): ArrayVariableCo
       functionName: arrayName,
       arrayType: arrayType,
       baseType: baseType,
+      structFields,
     },
     isInternal: isInternal,
     isStructArray: isStructArray,
@@ -229,6 +239,9 @@ export function stateVariableContext(node: VariableDeclaration): StateVariableCo
   // If the variable is internal we don't create mockCall for it
   const isInternal: boolean = node.visibility === 'internal';
 
+  // Check if the variable is a struct and get its fields
+  const structFields = extractStructFields(node.vType);
+
   // Save the state variable information
   return {
     setFunction: {
@@ -239,7 +252,9 @@ export function stateVariableContext(node: VariableDeclaration): StateVariableCo
     mockFunction: {
       functionName: variableName,
       paramType: variableType,
+      structFields,
     },
     isInternal: isInternal,
+    isStruct: !!structFields,
   };
 }

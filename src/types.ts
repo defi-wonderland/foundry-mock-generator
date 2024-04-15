@@ -46,9 +46,11 @@ export interface MappingVariableContext {
     keyTypes: string[];
     valueType: string;
     baseType: string;
+    structFields?: string[];
   };
   isInternal: boolean;
   isArray: boolean;
+  isStruct: boolean;
   isStructArray: boolean;
   hasNestedMapping: boolean;
 }
@@ -63,6 +65,7 @@ export interface ArrayVariableContext {
     functionName: string;
     arrayType: string;
     baseType: string;
+    structFields?: string[];
   };
   isInternal: boolean;
   isStructArray: boolean;
@@ -70,6 +73,7 @@ export interface ArrayVariableContext {
 
 export interface StateVariableContext {
   isInternal: boolean;
+  isStruct: boolean;
   setFunction: {
     functionName: string;
     paramType: string;
@@ -78,6 +82,7 @@ export interface StateVariableContext {
   mockFunction: {
     functionName: string;
     paramType: string;
+    structFields?: string[];
   };
 }
 interface Selector {

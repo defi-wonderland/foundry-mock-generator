@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { DataLocation, StateVariableVisibility } from 'solc-typed-ast';
-import { mockArrayTypeName, mockTypeName, mockVariableDeclaration } from '../../mocks';
+import { mockArrayTypeName, mockTypeName, mockUserDefinedTypeName, mockVariableDeclaration } from '../../mocks';
 import { arrayVariableContext } from '../../../src/context';
 
 describe('arrayVariableContext', () => {
@@ -25,6 +25,7 @@ describe('arrayVariableContext', () => {
         functionName: 'testArrayVariable',
         arrayType: 'uint256[] memory',
         baseType: 'uint256',
+        structFields: null,
       },
       isInternal: false,
       isStructArray: false,
@@ -35,7 +36,15 @@ describe('arrayVariableContext', () => {
     const node = mockVariableDeclaration({
       ...defaultAttributes,
       typeString: 'struct MyStruct[]',
-      vType: mockArrayTypeName({ vBaseType: mockTypeName({ typeString: 'struct MyStruct' }) }),
+      vType: mockArrayTypeName({
+        typeString: 'struct MyStruct[]',
+        vBaseType: mockUserDefinedTypeName({
+          typeString: 'struct MyStruct',
+          vReferencedDeclaration: mockTypeName({
+            children: [mockVariableDeclaration({ name: 'field1' }), mockVariableDeclaration({ name: 'field2' })],
+          }),
+        }),
+      }),
     });
     const context = arrayVariableContext(node);
 
@@ -49,6 +58,7 @@ describe('arrayVariableContext', () => {
         functionName: 'testArrayVariable',
         arrayType: 'MyStruct[] memory',
         baseType: 'MyStruct memory',
+        structFields: ['field1', 'field2'],
       },
       isInternal: false,
       isStructArray: true,
@@ -69,6 +79,7 @@ describe('arrayVariableContext', () => {
         functionName: 'testArrayVariable',
         arrayType: 'uint256[] memory',
         baseType: 'uint256',
+        structFields: null,
       },
       isInternal: true,
       isStructArray: false,
@@ -94,6 +105,7 @@ describe('arrayVariableContext', () => {
         functionName: 'testArrayVariable',
         arrayType: 'MyStruct[] memory',
         baseType: 'MyStruct memory',
+        structFields: null,
       },
       isInternal: true,
       isStructArray: true,
@@ -119,6 +131,7 @@ describe('arrayVariableContext', () => {
         functionName: 'testArrayVariable',
         arrayType: 'string[] memory',
         baseType: 'string memory',
+        structFields: null,
       },
       isInternal: false,
       isStructArray: false,

@@ -14,7 +14,7 @@ function mock_call_{{mockFunction.functionName}}({{#each mockFunction.keyTypes}}
   vm.mockCall(
     address(this),
     abi.encodeWithSignature('{{mockFunction.functionName}}({{#each mockFunction.keyTypes}}{{this}}{{#unless @last}},{{/unless}}{{/each}}{{#if isArray}},uint256{{/if}})'{{#each mockFunction.keyTypes}}, _key{{@index}}{{/each}}{{#if isArray}}, _index{{/if}}),
-    abi.encode(_value)
+    abi.encode({{#if isStruct}}{{#each mockFunction.structFields}}_value.{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}_value{{/if}})
   );
 }
 {{/unless}}

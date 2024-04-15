@@ -397,6 +397,25 @@ export const extractOverrides = (node: FullFunctionDefinition): string | null =>
 };
 
 /**
+ * Returns the fields of a struct
+ * @param node The struct to extract the fields from
+ * @returns The fields of the struct
+ */
+const getStructFields = (node: TypeName) => {
+  const isStruct = node.typeString?.startsWith('struct');
+  if (!isStruct) return [];
+
+  const isArray = node.typeString.includes('[]');
+  const structTypeName = (isArray ? (node as ArrayTypeName).vBaseType : node) as UserDefinedTypeName;
+  if (!structTypeName) return [];
+
+  const struct = structTypeName?.vReferencedDeclaration;
+  if (!struct) return [];
+
+  return struct.children || [];
+};
+
+/**
  * Returns if there are nested mappings in a struct
  * @dev This function is recursive, loops through all the fields of the struct and nested structs
  * @param node The struct to extract the mappings from
@@ -405,17 +424,7 @@ export const extractOverrides = (node: FullFunctionDefinition): string | null =>
 export const hasNestedMappings = (node: TypeName): boolean => {
   let result = false;
 
-  const isStruct = node.typeString.startsWith('struct');
-  if (!isStruct) return false;
-
-  const isArray = node.typeString.includes('[]');
-  const structTypeName = (isArray ? (node as ArrayTypeName).vBaseType : node) as UserDefinedTypeName;
-  if (!structTypeName) return false;
-
-  const struct = structTypeName?.vReferencedDeclaration;
-  if (!struct) return false;
-
-  const fields = struct.children || [];
+  const fields = getStructFields(node);
 
   for (const member of fields) {
     const field = member as TypeName;
@@ -434,4 +443,18 @@ export const hasNestedMappings = (node: TypeName): boolean => {
   }
 
   return result;
+};
+
+/**
+ * Extracts the fields of a struct
+ * @dev returns the fields names of the struct as a string array
+ * @param node The struct to extract the fields from
+ * @returns The fields names of the struct
+ */
+export const extractStructFields = (node: TypeName): string[] | null => {
+  const fields = getStructFields(node);
+
+  if (!fields.length) return null;
+
+  return fields.map((field) => (field as VariableDeclaration).name).filter((name) => name);
 };

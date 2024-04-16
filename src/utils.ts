@@ -321,8 +321,9 @@ export async function renderAbstractUnimplementedFunctions(contract: ContractDef
     const constructors = inheritedSelectors['constructor'];
     inheritedSelectors['constructor'] = {
       implemented: constructors.implemented,
+      function: contract.vConstructor,
       contracts: constructors.contracts ? constructors.contracts.add(contract.name) : new Set([contract.name]),
-      functions: constructors.functions ? [...constructors.functions, contract.vConstructor] : [contract.vConstructor],
+      constructors: constructors.constructors ? [...constructors.constructors, contract.vConstructor] : [contract.vConstructor],
     };
   }
 
@@ -333,7 +334,7 @@ export async function renderAbstractUnimplementedFunctions(contract: ContractDef
     // Skip the functions that are already implemented in the inherited contracts
     if (inheritedSelectors[selector].implemented) continue;
 
-    const func = inheritedSelectors[selector].functions[0];
+    const func = inheritedSelectors[selector].function;
 
     injectSelectors(func, inheritedSelectors);
     content += await renderNodeMock(func);
@@ -371,12 +372,13 @@ export const getAllInheritedSelectors = (contract: ContractDefinition, selectors
 
       const contracts = selectors[selector]?.contracts;
       const isImplemented = selectors[selector]?.implemented;
-      const functions = selectors[selector]?.functions || [];
+      const constructors = selectors[selector]?.constructors || [];
 
       selectors[selector] = {
         implemented: isImplemented || (!func.isConstructor && func.implemented),
         contracts: contracts ? contracts.add(base.name) : new Set([base.name]),
-        functions: func.isConstructor ? [...functions, func] : [func],
+        function: func,
+        constructors: func.isConstructor ? constructors.concat(func) : constructors,
       };
     }
 
@@ -489,8 +491,8 @@ export const extractConstructorsParameters = (
 } => {
   let constructors: FunctionDefinition[];
 
-  if (node?.selectors?.['constructor']?.functions?.length > 1) {
-    constructors = node.selectors['constructor'].functions;
+  if (node?.selectors?.['constructor']?.constructors?.length > 1) {
+    constructors = node.selectors['constructor'].constructors;
   } else {
     constructors = [node];
   }

@@ -88,7 +88,7 @@ describe('constructorContext', () => {
       constructor: {
         implemented: false,
         contracts: new Set(['TestContractA', 'TestContractB']),
-        functions: [nodeA, nodeB],
+        constructors: [nodeA, nodeB],
       },
     };
 

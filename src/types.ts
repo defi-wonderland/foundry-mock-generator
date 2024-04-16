@@ -87,7 +87,8 @@ export interface StateVariableContext {
 interface Selector {
   implemented: boolean;
   contracts?: Set<string>;
-  functions?: FunctionDefinition[];
+  function?: FunctionDefinition;
+  constructors?: FunctionDefinition[];
 }
 
 export interface SelectorsMap {

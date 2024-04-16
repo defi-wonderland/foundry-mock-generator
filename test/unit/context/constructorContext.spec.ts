@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { mockContractDefinition, mockFunctionDefinition, mockParameterList, mockVariableDeclaration } from '../../mocks';
 import { constructorContext } from '../../../src/context';
 import { DataLocation } from 'solc-typed-ast';
+import { FullFunctionDefinition, SelectorsMap } from '../../../src/types';
 
 describe('constructorContext', () => {
   const defaultAttributes = {
@@ -21,9 +22,8 @@ describe('constructorContext', () => {
     const context = constructorContext(node);
 
     expect(context).to.eql({
-      contractName: 'TestContract',
       parameters: '',
-      parameterNames: '',
+      contracts: 'TestContract()',
     });
   });
 
@@ -36,9 +36,8 @@ describe('constructorContext', () => {
     const context = constructorContext(node);
 
     expect(context).to.eql({
-      contractName: 'TestContract',
       parameters: 'uint256 a, boolean b',
-      parameterNames: 'a, b',
+      contracts: 'TestContract(a, b)',
     });
   });
 
@@ -48,9 +47,8 @@ describe('constructorContext', () => {
     const context = constructorContext(node);
 
     expect(context).to.eql({
-      contractName: 'TestContract',
       parameters: 'uint256 _param0, boolean _param1',
-      parameterNames: '_param0, _param1',
+      contracts: 'TestContract(_param0, _param1)',
     });
   });
 
@@ -63,9 +61,45 @@ describe('constructorContext', () => {
     const context = constructorContext(node);
 
     expect(context).to.eql({
-      contractName: 'TestContract',
       parameters: 'uint256 memory a, boolean calldata b',
-      parameterNames: 'a, b',
+      contracts: 'TestContract(a, b)',
+    });
+  });
+
+  it('processes inherited constructors', () => {
+    const parameters = [
+      mockVariableDeclaration({ name: 'a', typeString: 'uint256', storageLocation: DataLocation.Memory }),
+      mockVariableDeclaration({ name: 'b', typeString: 'boolean', storageLocation: DataLocation.CallData }),
+    ];
+
+    const nodeA = mockFunctionDefinition({
+      ...defaultAttributes,
+      vParameters: mockParameterList({ vParameters: parameters }),
+      vScope: mockContractDefinition({ name: 'TestContractA' }),
+    });
+
+    const nodeB = mockFunctionDefinition({
+      ...defaultAttributes,
+      vParameters: mockParameterList({ vParameters: parameters }),
+      vScope: mockContractDefinition({ name: 'TestContractB' }),
+    });
+
+    const selectors: SelectorsMap = {
+      constructor: {
+        implemented: false,
+        contracts: new Set(['TestContractA', 'TestContractB']),
+        functions: [nodeA, nodeB],
+      },
+    };
+
+    const nodeWithSelectors = nodeA as FullFunctionDefinition;
+    nodeWithSelectors.selectors = selectors;
+
+    const context = constructorContext(nodeWithSelectors);
+
+    expect(context).to.eql({
+      parameters: 'uint256 memory a, boolean calldata b, uint256 memory a, boolean calldata b',
+      contracts: 'TestContractA(a, b) TestContractB(a, b)',
     });
   });
 });

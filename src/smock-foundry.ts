@@ -50,7 +50,7 @@ export async function generateMockContracts(
           }
 
           for (const node of contract.children) {
-            if (!smockableNode(node)) continue;
+            if (!smockableNode(node, contract)) continue;
             mockContent += await renderNodeMock(node);
           }
 

@@ -16,8 +16,9 @@ import {
   extractOverrides,
   hasNestedMappings,
   extractStructFieldsNames,
+  extractConstructorsParameters,
 } from './utils';
-import { ContractDefinition, FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
+import { FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
 
 export function internalFunctionContext(node: FunctionDefinition): InternalFunctionContext {
   // Check if the function is internal
@@ -107,13 +108,12 @@ export function externalOrPublicFunctionContext(node: FunctionDefinition): Exter
 export function constructorContext(node: FunctionDefinition): ConstructorContext {
   if (!node.isConstructor) throw new Error('The node is not a constructor');
 
-  // Get the parameters of the constructor, if there are no parameters then we use an empty array
-  const { functionParameters: parameters, parameterNames } = extractParameters(node.vParameters.vParameters);
+  // Get the parameters of the constructors, if there are no parameters then we use an empty array
+  const { parameters, contracts } = extractConstructorsParameters(node as FullFunctionDefinition);
 
   return {
     parameters: parameters.join(', '),
-    parameterNames: parameterNames.join(', '),
-    contractName: (node.vScope as ContractDefinition).name,
+    contracts: Array.from(contracts).join(' '),
   };
 }
 

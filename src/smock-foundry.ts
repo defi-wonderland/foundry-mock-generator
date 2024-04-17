@@ -78,15 +78,7 @@ export async function generateMockContracts(
             sourceContractRelativePath: sourceContractRelativePath,
             exportedSymbols: Array.from(scope.exportedSymbols.keys()),
             license: sourceUnit.license,
-          })
-            // TODO: Check if there are other symbols we should account for
-            // TODO: Check if there is a better way to handle the HTML encoded characters, for instance with `compile` options
-            .replace(/&#x27;/g, "'")
-            .replace(/&#x3D;/g, '=')
-            .replace(/&gt;/g, '>')
-            .replace(/&lt;/g, '<')
-            .replace(/&lt;/g, '<')
-            .replace(/;;/g, ';');
+          });
 
           await ensureDir(path.dirname(mockContractAbsolutePath));
           writeFileSync(mockContractAbsolutePath, contractCode);

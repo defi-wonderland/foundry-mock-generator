@@ -61,14 +61,14 @@ export function explicitTypeStorageLocation(type: string): string {
  */
 export function getContractTemplate(): HandlebarsTemplateDelegate<any> {
   const templatePath = path.resolve(__dirname, 'templates', 'contract-template.hbs');
-  const templateContent = readFileSync(templatePath, 'utf8');
-  return Handlebars.compile(templateContent);
+  const templateContent = readFileSync(templatePath, { encoding: 'utf8' });
+  return Handlebars.compile(templateContent, { noEscape: true });
 }
 
 export function getSmockHelperTemplate(): HandlebarsTemplateDelegate<any> {
   const templatePath = path.resolve(__dirname, 'templates', 'helper-template.hbs');
-  const templateContent = readFileSync(templatePath, 'utf8');
-  return Handlebars.compile(templateContent);
+  const templateContent = readFileSync(templatePath, { encoding: 'utf8' });
+  return Handlebars.compile(templateContent, { noEscape: true });
 }
 
 /**
@@ -103,7 +103,7 @@ export async function getSolidityFilesAbsolutePaths(cwd: string, directories: st
 
 export async function readPartial(partialName: string): Promise<string> {
   const partialPath = path.resolve(__dirname, 'templates', 'partials', `${partialName}.hbs`);
-  const partialContent = readFileSync(partialPath, 'utf8');
+  const partialContent = readFileSync(partialPath, { encoding: 'utf8' });
   return partialContent;
 }
 
@@ -171,7 +171,7 @@ export async function renderNodeMock(node: ASTNode): Promise<string> {
   const context = contextRetriever(node);
   // TODO: Handle a possible invalid partial name
   const partialContent = await readPartial(partial);
-  const template = Handlebars.compile(partialContent);
+  const template = Handlebars.compile(partialContent, { noEscape: true });
   return template(context);
 }
 

@@ -1,19 +1,27 @@
 function set_{{setFunction.functionName}}({{setFunction.arrayType}} _{{setFunction.paramName}}) public {
   {{#if isStructArray}}
-  for (uint256 _i; _i < _{{setFunction.paramName}}.length; ++_i) {
-    {{setFunction.functionName}}.push(_{{setFunction.paramName}}[_i]);
-  }
+    for (uint256 _i; _i < _{{setFunction.paramName}}.length; ++_i) {
+      {{setFunction.functionName}}.push(_{{setFunction.paramName}}[_i]);
+    }
   {{else}}
-  {{setFunction.functionName}} = _{{setFunction.paramName}};
+    {{setFunction.functionName}} = _{{setFunction.paramName}};
   {{/if}}
 }
-{{#unless isInternal}}
 
+{{#unless isInternal}}
 function mock_call_{{mockFunction.functionName}}(uint256 _index, {{mockFunction.baseType}} _value) public {
   vm.mockCall(
     address(this),
     abi.encodeWithSignature('{{mockFunction.functionName}}(uint256)', _index),
-    abi.encode({{#if isStructArray}}{{#each mockFunction.structFields}}_value.{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}_value{{/if}})
+    abi.encode(
+      {{#if isStructArray}}
+        {{#each mockFunction.structFields}}
+          _value.{{this}}{{#unless @last}}, {{/unless}}
+        {{/each}}
+      {{else}}
+        _value
+      {{/if}}
+    )
   );
 }
 {{/unless}}

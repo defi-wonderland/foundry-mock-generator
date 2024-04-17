@@ -11,6 +11,7 @@ import {
 } from './utils';
 import path from 'path';
 import { ensureDir } from 'fs-extra';
+import { exec } from 'child_process';
 
 /**
  * Generates the mock contracts
@@ -22,7 +23,8 @@ export async function generateMockContracts(
   mocksDirectory: string,
   ignoreDirectories: string[],
 ) {
-  await emptySmockDirectory(mocksDirectory);
+  const mocksPath = path.resolve(rootPath, mocksDirectory);
+  await emptySmockDirectory(mocksPath);
   const contractTemplate = getContractTemplate();
 
   try {
@@ -88,12 +90,15 @@ export async function generateMockContracts(
       // Generate SmockHelper contract
       const smockHelperTemplate = await getSmockHelperTemplate();
       const smockHelperCode: string = smockHelperTemplate({});
-      const helperPath = path.resolve(rootPath, mocksDirectory);
-      writeFileSync(`${helperPath}/SmockHelper.sol`, smockHelperCode);
+      writeFileSync(`${mocksPath}/SmockHelper.sol`, smockHelperCode);
 
       console.log('Mock contracts generated successfully');
 
       await compileSolidityFilesFoundry(rootPath, mocksDirectory);
+
+      // Format the generated files
+      console.log('Formatting generated files...');
+      exec(`forge fmt --root ${rootPath} ${mocksPath}`);
     } catch (error) {
       console.error(error);
     }

@@ -1,13 +1,21 @@
 function set_{{setFunction.functionName}}({{setFunction.paramType}} _{{setFunction.paramName}}) public {
   {{setFunction.paramName}} = _{{setFunction.paramName}};
 }
-{{#unless isInternal}}
 
-function mock_call_{{mockFunction.functionName}}({{mockFunction.paramType}} _value) public {
-  vm.mockCall(
-    address(this),
-    abi.encodeWithSignature('{{mockFunction.functionName}}()'),
-    abi.encode({{#if isStruct}}{{#each mockFunction.structFields}}_value.{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{else}}_value{{/if}})
-  );
-}
+{{#unless isInternal}}
+  function mock_call_{{mockFunction.functionName}}({{mockFunction.paramType}} _value) public {
+    vm.mockCall(
+      address(this),
+      abi.encodeWithSignature('{{mockFunction.functionName}}()'),
+      abi.encode(
+        {{#if isStruct}}
+          {{#each mockFunction.structFields}}
+            _value.{{this}}{{#unless @last}}, {{/unless}}
+          {{/each}}
+        {{else}}
+          _value
+        {{/if}}
+      )
+    );
+  }
 {{/unless}}

@@ -6,8 +6,7 @@ export const explicitTypes = ['string', 'bytes', 'mapping', 'struct'];
 // Contexts to pass to Handlebars templates
 export interface ConstructorContext {
   parameters: string;
-  parameterNames: string;
-  contractName: string;
+  contracts: string;
 }
 
 export interface ExternalFunctionContext {
@@ -89,6 +88,7 @@ interface Selector {
   implemented: boolean;
   contracts?: Set<string>;
   function?: FunctionDefinition;
+  constructors?: FunctionDefinition[];
 }
 
 export interface SelectorsMap {

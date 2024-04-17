@@ -295,6 +295,8 @@ export function smockableNode(node: ASTNode): boolean {
     if (node.constant || node.mutability === 'immutable') return false;
     // If the state variable is private we don't mock it
     if (node.visibility === 'private') return false;
+  } else if (node instanceof FunctionDefinition) {
+    if (node.isConstructor && (node.parent as ContractDefinition)?.abstract) return false;
   } else if (!(node instanceof FunctionDefinition)) {
     // Only process variables and functions
     return false;
@@ -313,6 +315,17 @@ export async function renderAbstractUnimplementedFunctions(contract: ContractDef
 
   const currentSelectors = [...contract.vStateVariables, ...contract.vFunctions].map((node) => node.raw?.functionSelector);
   const inheritedSelectors = getAllInheritedSelectors(contract);
+
+  // If the abstract contract has a constructor, we need to add it to the selectors
+  if (contract.vConstructor) {
+    const constructors = inheritedSelectors['constructor'];
+    inheritedSelectors['constructor'] = {
+      implemented: constructors.implemented,
+      function: contract.vConstructor,
+      contracts: constructors.contracts ? constructors.contracts.add(contract.name) : new Set([contract.name]),
+      constructors: constructors.constructors ? [...constructors.constructors, contract.vConstructor] : [contract.vConstructor],
+    };
+  }
 
   for (const selector in inheritedSelectors) {
     // Skip the functions that are already implemented in the current contract
@@ -359,11 +372,13 @@ export const getAllInheritedSelectors = (contract: ContractDefinition, selectors
 
       const contracts = selectors[selector]?.contracts;
       const isImplemented = selectors[selector]?.implemented;
+      const constructors = selectors[selector]?.constructors || [];
 
       selectors[selector] = {
         implemented: isImplemented || (!func.isConstructor && func.implemented),
         contracts: contracts ? contracts.add(base.name) : new Set([base.name]),
         function: func,
+        constructors: func.isConstructor ? constructors.concat(func) : constructors,
       };
     }
 
@@ -461,4 +476,43 @@ export const extractStructFieldsNames = (node: TypeName): string[] | null => {
   const fields = getStructFields(node);
 
   return fields.map((field) => (field as VariableDeclaration).name).filter((name) => name);
+};
+
+/**
+ * Extracts the parameters of the constructors of a contract
+ * @param node The function to extract the constructors parameters from
+ * @returns The parameters and contracts of the constructors
+ */
+export const extractConstructorsParameters = (
+  node: FullFunctionDefinition,
+): {
+  parameters: string[];
+  contracts: string[];
+} => {
+  let constructors: FunctionDefinition[];
+
+  if (node?.selectors?.['constructor']?.constructors?.length > 1) {
+    constructors = node.selectors['constructor'].constructors;
+  } else {
+    constructors = [node];
+  }
+
+  const allParameters: string[] = [];
+  const allContracts: string[] = [];
+
+  for (const func of constructors) {
+    const { functionParameters: parameters, parameterNames } = extractParameters(func.vParameters.vParameters);
+    const contractName = (func.vScope as ContractDefinition).name;
+    const contractValue = `${contractName}(${parameterNames.join(', ')})`;
+
+    if (allContracts.includes(contractValue)) continue;
+
+    allParameters.push(...parameters);
+    allContracts.push(contractValue);
+  }
+
+  return {
+    parameters: allParameters,
+    contracts: allContracts,
+  };
 };

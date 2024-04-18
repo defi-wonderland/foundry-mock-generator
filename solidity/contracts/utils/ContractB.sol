@@ -2,6 +2,9 @@ pragma solidity ^0.8.0;
 
 import {IContractB} from '../../interfaces/IContractB.sol';
 
+/**
+ * @notice This contract is for testing string variables and function with return values
+ */
 contract ContractB is IContractB {
   string public stringVariable;
 

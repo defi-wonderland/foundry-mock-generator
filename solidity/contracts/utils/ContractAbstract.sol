@@ -1,5 +1,8 @@
 pragma solidity ^0.8.0;
 
+/**
+ * @notice This contract is for testing abstract contracts with implemented and unimplemented functions
+ */
 abstract contract ContractAbstract {
   uint256 public uintVariable;
 

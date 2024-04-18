@@ -3,6 +3,10 @@ pragma solidity ^0.8.0;
 
 contract MyContract {}
 
+/**
+ * @notice This interface is for general testing
+ * @dev It contains the most common variables types and functions
+ */
 interface IContractTest {
   // Structs
   struct MyStruct {

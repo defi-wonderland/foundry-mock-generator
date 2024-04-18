@@ -1,5 +1,8 @@
 pragma solidity ^0.8.0;
 
+/**
+ * @notice This contract is for testing functions with multiple return values
+ */
 contract ContractD {
   uint256 internal _internalUintVar;
 

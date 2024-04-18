@@ -56,19 +56,41 @@ export function explicitTypeStorageLocation(type: string): string {
 }
 
 /**
- * Registers the nested templates
+ * Reads a template file
+ * @param templateName The name of the template
+ * @param templatePath The path of the template (if it's nested)
  * @returns The content of the template
  */
-export function getContractTemplate(): HandlebarsTemplateDelegate<any> {
-  const templatePath = path.resolve(__dirname, 'templates', 'contract-template.hbs');
-  const templateContent = readFileSync(templatePath, { encoding: 'utf8' });
+export function readTemplate(templateName: string, templatePath: string[] = []): string {
+  const fullPath = path.resolve(__dirname, 'templates', ...templatePath, `${templateName}.hbs`);
+  return readFileSync(fullPath, { encoding: 'utf8' });
+}
+
+/**
+ * Compiles a template
+ * @param templateName The name of the template
+ * @param templatePath The path of the template (if it's nested)
+ * @returns The compiled template
+ */
+export function compileTemplate(templateName: string, templatePath?: string[]): HandlebarsTemplateDelegate<any> {
+  const templateContent = readTemplate(templateName, templatePath);
   return Handlebars.compile(templateContent, { noEscape: true });
 }
 
+/**
+ * Gets the base contract template
+ * @returns The contract template
+ */
+export function getContractTemplate(): HandlebarsTemplateDelegate<any> {
+  return compileTemplate('contract-template');
+}
+
+/**
+ * Gets the smock helper template
+ * @returns The helper template
+ */
 export function getSmockHelperTemplate(): HandlebarsTemplateDelegate<any> {
-  const templatePath = path.resolve(__dirname, 'templates', 'helper-template.hbs');
-  const templateContent = readFileSync(templatePath, { encoding: 'utf8' });
-  return Handlebars.compile(templateContent, { noEscape: true });
+  return compileTemplate('helper-template');
 }
 
 /**
@@ -99,12 +121,6 @@ export async function getSolidityFilesAbsolutePaths(cwd: string, directories: st
   const files = filesArrays.flat();
 
   return files;
-}
-
-export async function readPartial(partialName: string): Promise<string> {
-  const partialPath = path.resolve(__dirname, 'templates', 'partials', `${partialName}.hbs`);
-  const partialContent = readFileSync(partialPath, { encoding: 'utf8' });
-  return partialContent;
 }
 
 export function extractParameters(parameters: VariableDeclaration[]): {
@@ -170,8 +186,7 @@ export async function renderNodeMock(node: ASTNode): Promise<string> {
 
   const context = contextRetriever(node);
   // TODO: Handle a possible invalid partial name
-  const partialContent = await readPartial(partial);
-  const template = Handlebars.compile(partialContent, { noEscape: true });
+  const template = compileTemplate(partial, ['partials']);
   return template(context);
 }
 

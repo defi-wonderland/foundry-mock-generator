@@ -1,5 +1,12 @@
 pragma solidity ^0.8.0;
 
+/**
+ * @notice This contract is for testing complex data structures with mappings using them
+ *  - Structs with nestep mapings
+ *  - Nested structs
+ *  - Nested structs arrays
+ *  - Structs with multiple structs
+ */
 contract ContractG {
   struct Set {
     bytes32[] _values;

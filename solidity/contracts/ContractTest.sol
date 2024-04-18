@@ -3,6 +3,10 @@ pragma solidity ^0.8.0;
 
 import {IContractTest, MyContract} from '../interfaces/IContractTest.sol';
 
+/**
+ * @notice This contract is for general testing
+ * @dev It contains the most common variables types and functions
+ */
 contract ContractTest is IContractTest {
   uint256 public immutable immutableUintVariable = 10;
 

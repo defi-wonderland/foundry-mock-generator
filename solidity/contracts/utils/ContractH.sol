@@ -1,5 +1,8 @@
 pragma solidity ^0.8.0;
 
+/**
+ * @notice This contract is for testing receive and fallback functions
+ */
 contract ContractH {
   address public owner;
 

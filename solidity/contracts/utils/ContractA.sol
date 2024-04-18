@@ -4,6 +4,9 @@ import {IContractA} from '../../interfaces/IContractA.sol';
 import {IContractZ} from '../../interfaces/IContractZ.sol';
 import {ContractB} from './ContractB.sol';
 
+/**
+ * @notice This contract is for testing contracts with interfaces and inheritance
+ */
 contract ContractA is IContractA, ContractB {
   uint256 public uintVariable;
 

@@ -101,6 +101,11 @@ contract ContractTest is IContractTest {
     _result = true;
   }
 
+  function setStructVariable(MyStruct memory _myStruct) public returns (bool _result) {
+    myStructVariable = _myStruct;
+    _result = true;
+  }
+
   function internalVirtualFunction(uint256 _newValue)
     internal
     virtual

@@ -26,7 +26,9 @@ export interface ExternalFunctionContext {
 export interface InternalFunctionContext extends Omit<ExternalFunctionContext, 'visibility' | 'stateMutability'> {
   inputTypes: string[];
   outputTypes: string[];
+  explicitOutputTypes: string[];
   isView: boolean;
+  isPure: boolean;
 }
 
 export interface ImportContext {

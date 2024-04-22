@@ -18,7 +18,7 @@ import {
   extractStructFieldsNames,
   extractConstructorsParameters,
 } from './utils';
-import { FunctionDefinition, VariableDeclaration, Identifier, ImportDirective } from 'solc-typed-ast';
+import { FunctionDefinition, VariableDeclaration, Identifier, ImportDirective, FunctionStateMutability } from 'solc-typed-ast';
 
 export function internalFunctionContext(node: FunctionDefinition): InternalFunctionContext {
   // Check if the function is internal
@@ -27,7 +27,9 @@ export function internalFunctionContext(node: FunctionDefinition): InternalFunct
   if (!node.virtual) throw new Error('The function is not virtual');
 
   const { functionParameters, parameterTypes, parameterNames } = extractParameters(node.vParameters.vParameters);
-  const { functionReturnParameters, returnParameterTypes, returnParameterNames } = extractReturnParameters(node.vReturnParameters.vParameters);
+  const { functionReturnParameters, returnParameterTypes, returnParameterNames, returnExplicitParameterTypes } = extractReturnParameters(
+    node.vReturnParameters.vParameters,
+  );
   const signature = parameterTypes ? `${node.name}(${parameterTypes.join(',')})` : `${node.name}()`;
 
   // Create the string that will be used in the mock function signature
@@ -43,8 +45,9 @@ export function internalFunctionContext(node: FunctionDefinition): InternalFunct
     params = `${inputs}, ${outputs}`;
   }
 
-  // Check if the function is view
-  const isView = node.stateMutability === 'view';
+  // Check if the function is view or pure
+  const isView = node.stateMutability === FunctionStateMutability.View;
+  const isPure = node.stateMutability === FunctionStateMutability.Pure;
 
   // Save the internal function information
   return {
@@ -55,9 +58,11 @@ export function internalFunctionContext(node: FunctionDefinition): InternalFunct
     outputs: outputs,
     inputTypes: parameterTypes,
     outputTypes: returnParameterTypes,
+    explicitOutputTypes: returnExplicitParameterTypes,
     inputNames: parameterNames,
     outputNames: returnParameterNames,
     isView: isView,
+    isPure: isPure,
     implemented: node.implemented,
   };
 }

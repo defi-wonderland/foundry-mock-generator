@@ -1,0 +1,60 @@
+{{#if outputs}}
+  struct {{functionName}}Output {
+    {{#each outputTypes}}
+      {{this}} {{lookup ../outputNames @index}};
+    {{/each}}
+  }
+
+  mapping(bytes32 => {{functionName}}Output) private {{functionName}}Outputs;
+{{/if}}
+
+bytes32[] private {{functionName}}InputHashes;
+
+function mock_call_{{functionName}}({{parameters}}) public {
+  bytes32 _key = keccak256(abi.encode({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}));
+  {{#if outputs}}
+    {{functionName}}Outputs[_key] = {{functionName}}Output({{#each outputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+  {{/if}}
+  
+  for (uint256 _i; _i < {{functionName}}InputHashes.length; ++_i) {
+    if (_key == {{functionName}}InputHashes[_i]) return;
+  }
+  
+  {{functionName}}InputHashes.push(_key);
+}
+
+function {{functionName}}{{#if isPure}}Helper{{/if}}({{inputs}}) internal view {{#unless isPure}}override{{/unless}} {{#if outputs}}returns ({{outputs}}){{/if}} {
+  bytes32 _key = keccak256(abi.encode({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}));
+  
+  for (uint256 _i; _i < {{functionName}}InputHashes.length; ++_i) {
+    if (_key == {{functionName}}InputHashes[_i]) {
+      {{#if outputs}}
+        {{functionName}}Output memory _output = {{functionName}}Outputs[_key];
+      {{/if}}
+      
+      return ({{#each outputNames}}_output.{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+    }
+  }
+  
+  {{#if implemented}}
+    return super.{{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+  {{/if}}
+}
+
+{{#if isPure}}
+
+  function _{{functionName}}CastToPure(function({{#each inputTypes}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}) internal view {{#if outputs}}returns ({{explicitOutputTypes}}){{/if}} fnIn) 
+    internal 
+    pure 
+    returns (function({{#each inputTypes}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}) internal pure {{#if outputs}}returns ({{explicitOutputTypes}}){{/if}} fnOut)
+  {
+    assembly {
+      fnOut := fnIn
+    }
+  }
+
+  function {{functionName}}({{inputs}}) internal pure override {{#if outputs}}returns ({{outputs}}){{/if}} {
+    return _{{functionName}}CastToPure({{functionName}}Helper)({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+  }
+
+{{/if}}

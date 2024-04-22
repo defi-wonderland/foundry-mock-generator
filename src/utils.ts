@@ -159,6 +159,7 @@ export function extractReturnParameters(returnParameters: VariableDeclaration[])
   functionReturnParameters: string[];
   returnParameterTypes: string[];
   returnParameterNames: string[];
+  returnExplicitParameterTypes: string[];
 } {
   const functionReturnParameters = returnParameters.map((parameter: VariableDeclaration, index: number) => {
     const typeName: string = sanitizeParameterType(parameter.typeString);
@@ -169,11 +170,15 @@ export function extractReturnParameters(returnParameters: VariableDeclaration[])
 
   const returnParameterTypes = returnParameters.map((parameter) => sanitizeParameterType(parameter.typeString));
   const returnParameterNames = returnParameters.map((parameter, index) => parameter.name || `_returnParam${index}`);
+  const returnExplicitParameterTypes = returnParameters.map((parameter) =>
+    explicitTypeStorageLocation(sanitizeParameterType(parameter.typeString)),
+  );
 
   return {
     functionReturnParameters,
     returnParameterTypes,
     returnParameterNames,
+    returnExplicitParameterTypes,
   };
 }
 
@@ -188,6 +193,7 @@ export async function renderNodeMock(node: ASTNode): Promise<string> {
     constructor: constructorContext,
     'external-or-public-function': externalOrPublicFunctionContext,
     'internal-function': internalFunctionContext,
+    'internal-view-function': internalFunctionContext,
     import: importContext,
   };
 
@@ -217,7 +223,11 @@ export function partialName(node: ASTNode): string {
     } else if (node.visibility === 'external' || node.visibility === 'public') {
       return 'external-or-public-function';
     } else if (node.visibility === 'internal' && node.virtual) {
-      return 'internal-function';
+      if (node.stateMutability === 'view' || node.stateMutability === 'pure') {
+        return 'internal-view-function';
+      } else {
+        return 'internal-function';
+      }
     }
   } else if (node instanceof ImportDirective) {
     return 'import';

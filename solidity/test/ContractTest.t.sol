@@ -352,4 +352,17 @@ contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
     assertEq(_res2, 1);
     assertEq(_res3, 'test');
   }
+
+  function test_MockCall_InternalPureVirtualFunction() public {
+    _contractTest.mock_call_internalPureVirtualFunction(10, false, 12, 'TEST');
+    (bool _res1, uint256 _res2, string memory _res3) = _contractTest.callInternalPureVirtualFunction(10);
+    assertEq(_res1, false);
+    assertEq(_res2, 12);
+    assertEq(_res3, 'TEST');
+
+    (_res1, _res2, _res3) = _contractTest.callInternalPureVirtualFunction(11);
+    assertEq(_res1, true);
+    assertEq(_res2, 11);
+    assertEq(_res3, 'test');
+  }
 }

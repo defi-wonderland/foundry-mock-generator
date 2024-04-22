@@ -16,6 +16,7 @@ import {
   UserDefinedTypeName,
   ArrayTypeName,
   FunctionKind,
+  UserDefinedValueTypeDefinition,
 } from 'solc-typed-ast';
 import { userDefinedTypes, explicitTypes, FullFunctionDefinition, SelectorsMap } from './types';
 import { readFileSync } from 'fs'; // TODO: Replace with fs/promises
@@ -135,8 +136,17 @@ export function extractParameters(parameters: VariableDeclaration[]): {
     return `${typeName} ${storageLocation}${paramName}`;
   });
 
-  const parameterTypes = parameters.map((parameter) => sanitizeParameterType(parameter.typeString));
   const parameterNames = parameters.map((parameter, index) => parameter.name || `_param${index}`);
+
+  const parameterTypes = parameters.map((parameter) => {
+    if (parameter.vType instanceof UserDefinedTypeName) {
+      if (parameter.vType.vReferencedDeclaration instanceof UserDefinedValueTypeDefinition) {
+        return sanitizeParameterType(parameter.vType.vReferencedDeclaration.underlyingType.typeString);
+      }
+    }
+
+    return sanitizeParameterType(parameter.typeString);
+  });
 
   return {
     functionParameters,

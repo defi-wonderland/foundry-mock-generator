@@ -1,12 +1,12 @@
 import { expect } from 'chai';
-import { DataLocation, FunctionStateMutability, FunctionVisibility } from 'solc-typed-ast';
-import { mockFunctionDefinition, mockParameterList, mockVariableDeclaration } from '../../mocks';
+import { DataLocation, FunctionStateMutability, FunctionVisibility, UserDefinedTypeName, UserDefinedValueTypeDefinition } from 'solc-typed-ast';
+import { mockElementaryTypeName, mockFunctionDefinition, mockParameterList, mockVariableDeclaration } from '../../mocks';
 import { externalOrPublicFunctionContext } from '../../../src/context';
 import { FullFunctionDefinition, SelectorsMap } from '../../../src/types';
 
 describe('externalOrPublicFunctionContext', () => {
   const defaultAttributes = {
-    name: 'testInternalFunction',
+    name: 'testExternalFunction',
     visibility: FunctionVisibility.External,
     virtual: true,
     vParameters: mockParameterList({ vParameters: [] }),
@@ -28,8 +28,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction()',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction()',
       parameters: '',
       inputs: '',
       outputs: '',
@@ -51,8 +51,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction(uint256,boolean)',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction(uint256,boolean)',
       parameters: 'uint256 a, boolean b',
       inputs: 'uint256 a, boolean b',
       outputs: '',
@@ -71,8 +71,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction(uint256,boolean)',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction(uint256,boolean)',
       parameters: 'uint256 _param0, boolean _param1',
       inputs: 'uint256 _param0, boolean _param1',
       outputs: '',
@@ -91,8 +91,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction()',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction()',
       parameters: 'uint256 _returnParam0, boolean _returnParam1',
       inputs: '',
       outputs: 'uint256 _returnParam0, boolean _returnParam1',
@@ -114,8 +114,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction()',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction()',
       parameters: 'uint256 a, boolean b',
       inputs: '',
       outputs: 'uint256 a, boolean b',
@@ -139,8 +139,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction(uint256,string,bytes,boolean)',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction(uint256,string,bytes,boolean)',
       parameters: 'uint256 a, string memory b, bytes calldata c, boolean d',
       inputs: 'uint256 a, string memory b, bytes calldata c, boolean d',
       outputs: '',
@@ -164,8 +164,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(node);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction()',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction()',
       parameters: 'uint256 a, string memory b, bytes calldata c, boolean d',
       inputs: '',
       outputs: 'uint256 a, string memory b, bytes calldata c, boolean d',
@@ -202,8 +202,8 @@ describe('externalOrPublicFunctionContext', () => {
     const context = externalOrPublicFunctionContext(nodeWithSelectors);
 
     expect(context).to.eql({
-      functionName: 'testInternalFunction',
-      signature: 'testInternalFunction()',
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction()',
       parameters: '',
       inputs: '',
       outputs: '',
@@ -213,6 +213,43 @@ describe('externalOrPublicFunctionContext', () => {
       stateMutability: '',
       visibility: 'external',
       overrides: '(TestContractA, TestContractB)',
+    });
+  });
+
+  it('process functions with user defined value types', () => {
+    const vReferencedDeclaration = new UserDefinedValueTypeDefinition(0, '', 'MyType', mockElementaryTypeName({ typeString: 'uint256' }));
+
+    const vType = Object.create(UserDefinedTypeName.prototype, {
+      vReferencedDeclaration: { value: vReferencedDeclaration },
+    });
+
+    const node = mockFunctionDefinition({
+      ...defaultAttributes,
+      vParameters: mockParameterList({
+        vParameters: [
+          mockVariableDeclaration({
+            name: 'a',
+            typeString: 'MyType',
+            vType,
+          }),
+        ],
+      }),
+    });
+
+    const context = externalOrPublicFunctionContext(node);
+
+    expect(context).to.eql({
+      functionName: 'testExternalFunction',
+      signature: 'testExternalFunction(uint256)',
+      parameters: 'MyType a',
+      inputs: 'MyType a',
+      outputs: '',
+      inputNames: ['a'],
+      outputNames: [],
+      implemented: true,
+      stateMutability: '',
+      visibility: 'external',
+      overrides: null,
     });
   });
 });

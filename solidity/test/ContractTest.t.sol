@@ -313,6 +313,12 @@ contract E2EMockContractTest_Mock_call_External_Func is CommonE2EBase {
     assertEq(_contractTest.setVariables(20, true), true);
   }
 
+  function test_MockCall_SetStructVariables() public {
+    IContractTest.MyStruct memory _myStruct = IContractTest.MyStruct(30, 'test');
+    _contractTest.mock_call_setStructVariable(_myStruct, true);
+    assertEq(_contractTest.setStructVariable(_myStruct), true);
+  }
+
   function test_MockCall_TestFunc() public {
     _contractTest.mock_call_testFunc(2, false);
     assertEq(_contractTest.testFunc(2), false);

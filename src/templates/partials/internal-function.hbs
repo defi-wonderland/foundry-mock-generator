@@ -15,3 +15,8 @@ function {{functionName}}({{inputs}}) internal override {{#if outputs}}returns (
     else return super.{{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
   {{/if}}
 }
+
+
+function call_{{functionName}}({{inputs}}) public {{#if outputs}}returns ({{outputs}}){{/if}} {
+  return {{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+}

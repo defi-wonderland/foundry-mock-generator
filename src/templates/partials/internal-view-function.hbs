@@ -58,3 +58,7 @@ function {{functionName}}{{#if isPure}}Helper{{/if}}({{inputs}}) internal view {
   }
 
 {{/if}}
+
+function call_{{functionName}}({{inputs}}) public {{#if isView}}view{{else}}pure{{/if}} {{#if outputs}}returns ({{outputs}}){{/if}} {
+  return {{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+}

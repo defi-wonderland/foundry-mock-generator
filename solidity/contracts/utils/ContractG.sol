@@ -52,4 +52,10 @@ contract ContractG {
   mapping(bytes32 _disputeId => NestedStruct _nestedStruct) public _nestedStructs;
 
   NestedStruct public nestedStruct;
+
+  // CommonStruct[][] public multidimensionalStruct;
+
+  function setNestedStruct(NestedStruct memory _nestedStruct) public {
+    nestedStruct = _nestedStruct;
+  }
 }

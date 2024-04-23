@@ -42,6 +42,8 @@ describe('internalFunctionContext', () => {
       outputTypes: [],
       implemented: true,
       isView: false,
+      explicitOutputTypes: [],
+      isPure: false,
     });
   });
 
@@ -65,6 +67,8 @@ describe('internalFunctionContext', () => {
       outputTypes: [],
       implemented: true,
       isView: false,
+      explicitOutputTypes: [],
+      isPure: false,
     });
   });
 
@@ -85,6 +89,8 @@ describe('internalFunctionContext', () => {
       outputTypes: [],
       implemented: true,
       isView: false,
+      explicitOutputTypes: [],
+      isPure: false,
     });
   });
 
@@ -105,6 +111,8 @@ describe('internalFunctionContext', () => {
       outputTypes: ['uint256', 'boolean'],
       implemented: true,
       isView: false,
+      explicitOutputTypes: ['uint256', 'boolean'],
+      isPure: false,
     });
   });
 
@@ -128,6 +136,8 @@ describe('internalFunctionContext', () => {
       outputTypes: ['uint256', 'boolean'],
       implemented: true,
       isView: false,
+      explicitOutputTypes: ['uint256', 'boolean'],
+      isPure: false,
     });
   });
 
@@ -153,6 +163,8 @@ describe('internalFunctionContext', () => {
       outputTypes: [],
       implemented: true,
       isView: false,
+      explicitOutputTypes: [],
+      isPure: false,
     });
   });
 
@@ -178,6 +190,8 @@ describe('internalFunctionContext', () => {
       outputTypes: ['uint256', 'string', 'bytes', 'boolean'],
       implemented: true,
       isView: false,
+      explicitOutputTypes: ['uint256', 'string memory', 'bytes memory', 'boolean'],
+      isPure: false,
     });
   });
 
@@ -187,6 +201,15 @@ describe('internalFunctionContext', () => {
       const node = mockFunctionDefinition({ ...defaultAttributes, stateMutability: FunctionStateMutability[stateMutability] });
       const context = internalFunctionContext(node);
       expect(context.isView).to.be.equal(isView);
+    }
+  });
+
+  it('determines whether the function is pure or not', () => {
+    for (const stateMutability in FunctionStateMutability) {
+      const isPure = FunctionStateMutability[stateMutability] === FunctionStateMutability.Pure;
+      const node = mockFunctionDefinition({ ...defaultAttributes, stateMutability: FunctionStateMutability[stateMutability] });
+      const context = internalFunctionContext(node);
+      expect(context.isPure).to.be.equal(isPure);
     }
   });
 
@@ -232,6 +255,8 @@ describe('internalFunctionContext', () => {
       outputTypes: [],
       implemented: true,
       isView: false,
+      explicitOutputTypes: [],
+      isPure: false,
     });
   });
 });

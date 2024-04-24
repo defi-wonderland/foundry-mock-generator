@@ -28,10 +28,4 @@ contract ContractJ {
     myUserTypeVariable = add(a, b);
     return myUserTypeVariable;
   }
-
-  // =============== virtual call ===============
-
-  function callInternalAdd(MyUserType a, MyUserType b) public returns (MyUserType) {
-    return internalAdd(a, b);
-  }
 }

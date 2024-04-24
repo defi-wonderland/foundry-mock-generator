@@ -8,6 +8,8 @@ import {
   smockableNode,
   compileSolidityFilesFoundry,
   renderAbstractUnimplementedFunctions,
+  getRemappings,
+  getTestImport,
 } from './utils';
 import path from 'path';
 import { ensureDir } from 'fs-extra';
@@ -31,7 +33,9 @@ export async function generateMockContracts(
     console.log('Parsing contracts...');
 
     try {
-      const sourceUnits = await getSourceUnits(rootPath, contractsDirectories, ignoreDirectories);
+      const remappings: string[] = await getRemappings(rootPath);
+      const testImport = getTestImport(remappings);
+      const sourceUnits = await getSourceUnits(rootPath, contractsDirectories, ignoreDirectories, remappings);
 
       if (!sourceUnits.length) return console.error('No solidity files found in the specified directory');
 
@@ -80,6 +84,7 @@ export async function generateMockContracts(
             sourceContractRelativePath: sourceContractRelativePath,
             exportedSymbols: Array.from(scope.exportedSymbols.keys()),
             license: sourceUnit.license,
+            testImport,
           });
 
           await ensureDir(path.dirname(mockContractAbsolutePath));
@@ -89,12 +94,12 @@ export async function generateMockContracts(
 
       // Generate SmockHelper contract
       const smockHelperTemplate = await getSmockHelperTemplate();
-      const smockHelperCode: string = smockHelperTemplate({});
+      const smockHelperCode: string = smockHelperTemplate({ testImport });
       writeFileSync(`${mocksPath}/SmockHelper.sol`, smockHelperCode);
 
       console.log('Mock contracts generated successfully');
 
-      await compileSolidityFilesFoundry(rootPath, mocksDirectory);
+      await compileSolidityFilesFoundry(rootPath, mocksDirectory, remappings);
 
       // Format the generated files
       console.log('Formatting generated files...');

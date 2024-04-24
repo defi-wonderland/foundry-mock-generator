@@ -1,43 +1,18 @@
-{{#if outputs}}
-  struct {{functionName}}Output {
-    {{#each outputTypes}}
-      {{this}} {{lookup ../outputNames @index}};
-    {{/each}}
-  }
-
-  mapping(bytes32 => {{functionName}}Output) private {{functionName}}Outputs;
-{{/if}}
-
-bytes32[] private {{functionName}}InputHashes;
-
 function mock_call_{{functionName}}({{parameters}}) public {
-  bytes32 _key = keccak256(abi.encode({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}));
-  {{#if outputs}}
-    {{functionName}}Outputs[_key] = {{functionName}}Output({{#each outputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
-  {{/if}}
-  
-  for (uint256 _i; _i < {{functionName}}InputHashes.length; ++_i) {
-    if (_key == {{functionName}}InputHashes[_i]) return;
-  }
-  
-  {{functionName}}InputHashes.push(_key);
+  vm.mockCall(
+    address(this),
+    abi.encodeWithSignature('{{signature}}'{{#if inputs}}, {{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}),
+    abi.encode({{#each outputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}})
+  );
 }
 
 function {{functionName}}{{#if isPure}}Helper{{/if}}({{inputs}}) internal view {{#unless isPure}}override{{/unless}} {{#if outputs}}returns ({{outputs}}){{/if}} {
-  bytes32 _key = keccak256(abi.encode({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}));
+  (bool _success, bytes memory _data) = address(this).staticcall(abi.encodeWithSignature('{{signature}}'{{#if inputs}}, {{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}));
   
-  for (uint256 _i; _i < {{functionName}}InputHashes.length; ++_i) {
-    if (_key == {{functionName}}InputHashes[_i]) {
-      {{#if outputs}}
-        {{functionName}}Output memory _output = {{functionName}}Outputs[_key];
-      {{/if}}
-      
-      return ({{#each outputNames}}_output.{{this}}{{#unless @last}}, {{/unless}}{{/each}});
-    }
-  }
+  if (_success) return abi.decode(_data, ({{#each outputTypes}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}));
   
   {{#if implemented}}
-    return super.{{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+    else return super.{{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
   {{/if}}
 }
 
@@ -61,4 +36,8 @@ function {{functionName}}{{#if isPure}}Helper{{/if}}({{inputs}}) internal view {
 
 function call_{{functionName}}({{inputs}}) public {{#if isView}}view{{else}}pure{{/if}} {{#if outputs}}returns ({{outputs}}){{/if}} {
   return {{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+}
+
+function expectCall_{{functionName}}({{#if inputs}}{{inputs}}{{/if}}) public {
+  vm.expectCall(address(this), abi.encodeWithSignature('{{signature}}'{{#if inputs}}, {{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}));
 }

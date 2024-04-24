@@ -328,6 +328,10 @@ contract E2EMockContractTest_Mock_call_External_Func is CommonE2EBase {
 
 contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
   function test_MockCall_InternalVirtualFunction() public {
+    // Expect calls to internal functions
+    _contractTest.expectCall_internalVirtualFunction(10);
+    _contractTest.expectCall_internalVirtualFunction(11);
+
     _contractTest.mock_call_internalVirtualFunction(10, false, 12, 'TEST');
     (bool _res1, uint256 _res2, string memory _res3) = _contractTest.callInternalVirtualFunction(10);
     assertEq(_res1, false);
@@ -341,6 +345,10 @@ contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
   }
 
   function test_call_InternalVirtualFunction() public {
+    // Expect calls to internal functions
+    _contractTest.expectCall_internalVirtualFunction(10);
+    _contractTest.expectCall_internalVirtualFunction(11);
+
     _contractTest.mock_call_internalVirtualFunction(10, false, 12, 'TEST');
     (bool _res1, uint256 _res2, string memory _res3) = _contractTest.call_internalVirtualFunction(10);
     assertEq(_res1, false);
@@ -354,6 +362,10 @@ contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
   }
 
   function test_MockCall_InternalViewVirtualFunction() public {
+    // Expect calls to internal functions
+    _contractTest.expectCall_internalViewVirtualFunction(10);
+    _contractTest.expectCall_internalViewVirtualFunction(11);
+
     _contractTest.mock_call_internalViewVirtualFunction(10, false, 12, 'TEST');
     (bool _res1, uint256 _res2, string memory _res3) = _contractTest.callInternalViewVirtualFunction(10);
     assertEq(_res1, false);
@@ -367,6 +379,10 @@ contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
   }
 
   function test_call_InternalViewVirtualFunction() public {
+    // Expect calls to internal functions
+    _contractTest.expectCall_internalViewVirtualFunction(10);
+    _contractTest.expectCall_internalViewVirtualFunction(11);
+
     _contractTest.mock_call_internalViewVirtualFunction(10, false, 12, 'TEST');
     (bool _res1, uint256 _res2, string memory _res3) = _contractTest.call_internalViewVirtualFunction(10);
     assertEq(_res1, false);
@@ -380,6 +396,10 @@ contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
   }
 
   function test_MockCall_InternalPureVirtualFunction() public {
+    // Expect calls to internal functions
+    _contractTest.expectCall_internalPureVirtualFunction(10);
+    _contractTest.expectCall_internalPureVirtualFunction(11);
+
     _contractTest.mock_call_internalPureVirtualFunction(10, false, 12, 'TEST');
     (bool _res1, uint256 _res2, string memory _res3) = _contractTest.callInternalPureVirtualFunction(10);
     assertEq(_res1, false);
@@ -393,6 +413,10 @@ contract E2EMockContractTest_Mock_call_Internal_Func is CommonE2EBase {
   }
 
   function test_call_InternalPureVirtualFunction() public {
+    // Expect calls to internal functions
+    _contractTest.expectCall_internalPureVirtualFunction(10);
+    _contractTest.expectCall_internalPureVirtualFunction(11);
+
     _contractTest.mock_call_internalPureVirtualFunction(10, false, 12, 'TEST');
     (bool _res1, uint256 _res2, string memory _res3) = _contractTest.call_internalPureVirtualFunction(10);
     assertEq(_res1, false);

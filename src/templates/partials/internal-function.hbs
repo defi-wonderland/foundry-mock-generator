@@ -16,7 +16,10 @@ function {{functionName}}({{inputs}}) internal override {{#if outputs}}returns (
   {{/if}}
 }
 
-
 function call_{{functionName}}({{inputs}}) public {{#if outputs}}returns ({{outputs}}){{/if}} {
   return {{functionName}}({{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}});
+}
+
+function expectCall_{{functionName}}({{#if inputs}}{{inputs}}{{/if}}) public {
+  vm.expectCall(address(this), abi.encodeWithSignature('{{signature}}'{{#if inputs}}, {{#each inputNames}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}{{/if}}));
 }

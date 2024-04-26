@@ -53,7 +53,17 @@ contract ContractG {
 
   NestedStruct public nestedStruct;
 
-  // CommonStruct[][] public multidimensionalStruct;
+  CommonStruct[] public structArray;
+
+  CommonStruct[][] public twoDimensionalStruct;
+
+  CommonStruct[][][] public threeDimensionalStruct;
+
+  uint256[][] public twoDimensionalArray;
+
+  string[][] public twoDimensionalStringArray;
+
+  uint256[][][] public threeDimensionalArray;
 
   function setNestedStruct(NestedStruct memory _nestedStruct) public {
     nestedStruct = _nestedStruct;

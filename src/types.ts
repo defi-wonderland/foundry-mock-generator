@@ -70,6 +70,8 @@ export interface ArrayVariableContext {
   };
   isInternal: boolean;
   isStructArray: boolean;
+  isMultiDimensionalStruct: boolean;
+  dimensions: number[];
 }
 
 export interface StateVariableContext {

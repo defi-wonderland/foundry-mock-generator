@@ -29,6 +29,8 @@ describe('arrayVariableContext', () => {
       },
       isInternal: false,
       isStructArray: false,
+      isMultiDimensionalStruct: false,
+      dimensions: [0],
     });
   });
 
@@ -62,6 +64,8 @@ describe('arrayVariableContext', () => {
       },
       isInternal: false,
       isStructArray: true,
+      isMultiDimensionalStruct: false,
+      dimensions: [0],
     });
   });
 
@@ -83,6 +87,8 @@ describe('arrayVariableContext', () => {
       },
       isInternal: true,
       isStructArray: false,
+      isMultiDimensionalStruct: false,
+      dimensions: [0],
     });
   });
 
@@ -109,6 +115,8 @@ describe('arrayVariableContext', () => {
       },
       isInternal: true,
       isStructArray: true,
+      isMultiDimensionalStruct: false,
+      dimensions: [0],
     });
   });
 
@@ -135,6 +143,37 @@ describe('arrayVariableContext', () => {
       },
       isInternal: false,
       isStructArray: false,
+      isMultiDimensionalStruct: false,
+      dimensions: [0],
+    });
+  });
+
+  it('should return the correct context for a multi-dimensional array', () => {
+    const node = mockVariableDeclaration({
+      ...defaultAttributes,
+      typeString: 'uint256[][]',
+      vType: mockArrayTypeName({
+        vBaseType: mockArrayTypeName({ typeString: 'uint256[]', vBaseType: mockTypeName({ typeString: 'uint256' }) }),
+      }),
+    });
+    const context = arrayVariableContext(node);
+
+    expect(context).to.eql({
+      setFunction: {
+        functionName: 'testArrayVariable',
+        arrayType: 'uint256[][] memory',
+        paramName: 'testArrayVariable',
+      },
+      mockFunction: {
+        functionName: 'testArrayVariable',
+        arrayType: 'uint256[][] memory',
+        baseType: 'uint256',
+        structFields: [],
+      },
+      isInternal: false,
+      isStructArray: false,
+      isMultiDimensionalStruct: false,
+      dimensions: [0, 1],
     });
   });
 });

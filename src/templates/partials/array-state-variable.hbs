@@ -1,27 +1,31 @@
-function set_{{setFunction.functionName}}({{setFunction.arrayType}} _{{setFunction.paramName}}) public {
-  {{#if isStructArray}}
-    for (uint256 _i; _i < _{{setFunction.paramName}}.length; ++_i) {
-      {{setFunction.functionName}}.push(_{{setFunction.paramName}}[_i]);
-    }
-  {{else}}
-    {{setFunction.functionName}} = _{{setFunction.paramName}};
-  {{/if}}
-}
+{{#unless isMultiDimensionalStruct}}
+  function set_{{setFunction.functionName}}({{setFunction.arrayType}} _{{setFunction.paramName}}) public {
+    {{#if isStructArray}}
+      for (uint256 _i; _i < _{{setFunction.paramName}}.length; ++_i) {
+        {{setFunction.functionName}}.push(_{{setFunction.paramName}}[_i]);
+      }
+    {{else}}
+      {{setFunction.functionName}} = _{{setFunction.paramName}};
+    {{/if}}
+  }
 
-{{#unless isInternal}}
-function mock_call_{{mockFunction.functionName}}(uint256 _index, {{mockFunction.baseType}} _value) public {
-  vm.mockCall(
-    address(this),
-    abi.encodeWithSignature('{{mockFunction.functionName}}(uint256)', _index),
-    abi.encode(
-      {{#if isStructArray}}
-        {{#each mockFunction.structFields}}
-          _value.{{this}}{{#unless @last}}, {{/unless}}
-        {{/each}}
-      {{else}}
-        _value
-      {{/if}}
-    )
-  );
-}
+  {{#unless isInternal}}
+  function mock_call_{{mockFunction.functionName}}({{#each dimensions}}uint256 _index{{@index}}, {{/each}} {{mockFunction.baseType}} _value) public {
+    vm.mockCall(
+      address(this),
+      abi.encodeWithSignature(
+        '{{mockFunction.functionName}}({{#each dimensions}}uint256{{#unless @last}},{{/unless}}{{/each}})', 
+        {{#each dimensions}}_index{{@index}}{{#unless @last}}, {{/unless}} {{/each}}),
+      abi.encode(
+        {{#if isStructArray}}
+          {{#each mockFunction.structFields}}
+            _value.{{this}}{{#unless @last}}, {{/unless}}
+          {{/each}}
+        {{else}}
+          _value
+        {{/if}}
+      )
+    );
+  }
+  {{/unless}}
 {{/unless}}

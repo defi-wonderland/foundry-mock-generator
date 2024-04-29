@@ -205,17 +205,8 @@ export function arrayVariableContext(node: VariableDeclaration): ArrayVariableCo
   // Array type
   const arrayType: string = sanitizeParameterType(explicitTypeStorageLocation(node.typeString));
 
-  // Base type
-  let baseType: string = sanitizeParameterType(explicitTypeStorageLocation(node.vType['vBaseType'].typeString));
-
   // Struct flag
   const isStructArray: boolean = node.typeString.startsWith('struct ');
-
-  // Check if the variable is a struct and get its fields
-  const structFields = extractStructFieldsNames(node.vType);
-
-  // If the array is internal we don't create mockCall for it
-  const isInternal: boolean = node.visibility === 'internal';
 
   // Check if the array is multi-dimensional
   const dimensionsQuantity = node.typeString.split('[]').length - 1;
@@ -223,7 +214,15 @@ export function arrayVariableContext(node: VariableDeclaration): ArrayVariableCo
   const isMultiDimensionalStruct = isMultiDimensional && isStructArray;
   const dimensions = [...Array(dimensionsQuantity).keys()];
 
-  if (isMultiDimensional) baseType = explicitTypeStorageLocation(node.typeString.replace(/\[\]/g, ''));
+  // Base type
+  const baseTypeString = isMultiDimensional ? node.typeString.replace(/\[\]/g, '') : node.vType['vBaseType'].typeString;
+  const baseType = sanitizeParameterType(explicitTypeStorageLocation(baseTypeString));
+
+  // Check if the variable is a struct and get its fields
+  const structFields = extractStructFieldsNames(node.vType);
+
+  // If the array is internal we don't create mockCall for it
+  const isInternal: boolean = node.visibility === 'internal';
 
   return {
     setFunction: {

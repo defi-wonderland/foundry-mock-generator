@@ -46,8 +46,8 @@ export function internalFunctionContext(node: FunctionDefinition): InternalFunct
   }
 
   // Check if the function is view or pure
-  const isView = node.stateMutability === FunctionStateMutability.View;
   const isPure = node.stateMutability === FunctionStateMutability.Pure;
+  const isView = node.stateMutability === FunctionStateMutability.View || isPure;
 
   // Save the internal function information
   return {

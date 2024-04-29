@@ -198,9 +198,10 @@ describe('internalFunctionContext', () => {
   it('determines whether the function is view or not', () => {
     for (const stateMutability in FunctionStateMutability) {
       const isView = FunctionStateMutability[stateMutability] === FunctionStateMutability.View;
+      const isPure = FunctionStateMutability[stateMutability] === FunctionStateMutability.Pure;
       const node = mockFunctionDefinition({ ...defaultAttributes, stateMutability: FunctionStateMutability[stateMutability] });
       const context = internalFunctionContext(node);
-      expect(context.isView).to.be.equal(isView);
+      expect(context.isView).to.be.equal(isView || isPure);
     }
   });
 

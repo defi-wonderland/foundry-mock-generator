@@ -19,3 +19,9 @@ function set_{{setFunction.functionName}}({{setFunction.paramType}} _{{setFuncti
     );
   }
 {{/unless}}
+
+{{#if isInternal}}
+  function call_{{setFunction.functionName}}() view public returns ({{setFunction.paramType}}) {
+    return {{setFunction.functionName}};
+  }
+{{/if}}

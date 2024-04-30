@@ -37,7 +37,11 @@ contract ContractG {
     CommonStruct _common;
   }
 
-  mapping(bytes32 _disputeId => bool _finished) public _finished;
+  mapping(bytes32 _disputeId => bool _finished) public finished;
+
+  mapping(bytes32 _disputeId => bool _finished) internal _finishedInternal;
+
+  mapping(bytes32 _key1 => mapping(bytes32 _key2 => bool _finished)) internal _doubleFinishedInternal;
 
   mapping(bytes32 _disputeId => Set _votersSet) internal _votersA;
 
@@ -51,9 +55,13 @@ contract ContractG {
 
   mapping(bytes32 _disputeId => NestedStruct _nestedStruct) public _nestedStructs;
 
+  mapping(bytes32 _disputeId => NestedStruct _nestedStruct) internal _nestedStructsInternal;
+
   NestedStruct public nestedStruct;
 
   CommonStruct[] public structArray;
+
+  CommonStruct[] internal _structArrayInternal;
 
   CommonStruct[][] public twoDimensionalStruct;
 

@@ -192,7 +192,6 @@ export async function renderNodeMock(node: ASTNode): Promise<string> {
     constructor: constructorContext,
     'external-or-public-function': externalOrPublicFunctionContext,
     'internal-function': internalFunctionContext,
-    'internal-view-function': internalFunctionContext,
     import: importContext,
   };
 
@@ -222,11 +221,7 @@ export function partialName(node: ASTNode): string {
     } else if (node.visibility === 'external' || node.visibility === 'public') {
       return 'external-or-public-function';
     } else if (node.visibility === 'internal' && node.virtual) {
-      if (node.stateMutability === 'view' || node.stateMutability === 'pure') {
-        return 'internal-view-function';
-      } else {
-        return 'internal-function';
-      }
+      return 'internal-function';
     }
   } else if (node instanceof ImportDirective) {
     return 'import';

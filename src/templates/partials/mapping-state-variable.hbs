@@ -35,4 +35,10 @@
       );
     }
   {{/unless}}
+
+  {{#if isInternal}}
+    function call_{{setFunction.functionName}}({{#each setFunction.keyTypes}}{{this}} _key{{@index}}{{#unless @last}}, {{/unless}}{{/each}}) view public returns ({{setFunction.valueType}}) {
+      return {{setFunction.functionName}}{{#each setFunction.keyTypes}}[_key{{@index}}]{{/each}};
+    }
+  {{/if}}
 {{/unless}}

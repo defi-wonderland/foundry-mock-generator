@@ -92,7 +92,7 @@ contract BaseTest is Test, SmockHelper {
     // return _greeterAddress;
 
     greeter = MockGreeter(
-      deployMock('Greeter', type(Greeter).creationCode, abi.encode('Hello'))
+      deployMock('Greeter', type(MockGreeter).creationCode, abi.encode('Hello'))
     );
   }
 }
